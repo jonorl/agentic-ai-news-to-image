@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model daily_news_art {
+  id             Int      @id @default(autoincrement())
+  headline       String
+  description    String
+  image_url      String
+  generated_at   DateTime @default(now()) @db.Timestamptz(6)
+  published_date DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model n8n_chat_histories {
+  id      Int      @id @default(autoincrement())
+  message String
+  date    DateTime @default(now()) @db.Date
+}

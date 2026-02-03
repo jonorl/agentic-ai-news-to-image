@@ -1,0 +1,588 @@
+{
+  "name": "Agentic AI News bot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#ROLE\nYou are an editorial selector for a news-to-art website.\n\n#TASK\nChoose ONE impactful, globally relevant news headline from the list below.\n\n#SELECTION CRITERIA\n1. Pick the most impactful and globally relevant headline\n2. Avoid headlines substantially similar to previously selected ones\n3. \"Substantially similar\" means same event, person, or topic (even if worded differently)\n4. If all headlines are similar, choose the least similar option\n\n{{ $json.prompt }}\n\n#OUTPUT FORMAT (STRICT)\nReturn ONLY a valid JSON object:\n{\n  \"headline\": \"exact headline text from the numbered list\",\n  \"description\": \"short visual description, max 20 words, concrete imagery\"\n}\n\nDo NOT include any other text, markdown, or explanation.",
+        "options": {
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -240,
+        -176
+      ],
+      "id": "ecb25b2c-5a29-4274-9221-f4054afd19c9",
+      "name": "Daily News bot"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -168,
+        48
+      ],
+      "id": "c7d72452-509c-4bc0-90ef-7db9d8a26c6b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CRamIstOC5Iar0DT",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "image/png"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.description }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "bf65b3f3-2f5d-448d-a3f0-0f104d63b358",
+      "name": "Generate image",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1U2ukUEggGmwUd2Q",
+          "name": "Bearer Auth account"
+        },
+        "huggingFaceApi": {
+          "id": "70gB7bkMVCLBULss",
+          "name": "HuggingFaceApi account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"headline\": $json.headline, \"description\": $json.description, \"imageUrl\": $json.secure_url } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1008,
+        -200
+      ],
+      "id": "2c58ccfd-e506-4d4b-b674-5459c6843bba",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "89edac54-141b-4f2b-b784-bdb4172143fb",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1136,
+        -320
+      ],
+      "id": "a212e2f4-158c-4f71-bace-3b80da4b06bb",
+      "name": "Webhook",
+      "webhookId": "89edac54-141b-4f2b-b784-bdb4172143fb"
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "additionalFieldsFile": {
+          "folder": "agentic-ai"
+        }
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -32
+      ],
+      "id": "6803e6a3-897d-42fc-975a-33046fbdbabf",
+      "name": "Upload an asset from file data",
+      "retryOnFail": true,
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "SG9oXNrudjZBzbBz",
+          "name": "Cloudinary account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42a0a5a8-2262-4e73-9058-43a27fda464b",
+              "name": "headline",
+              "value": "={{ JSON.parse($json.output.replace(/```json|```/g, \"\")).headline }}",
+              "type": "string"
+            },
+            {
+              "id": "1b5f4dc8-8b6f-45b6-a67e-97ef6cb4a643",
+              "name": "description",
+              "value": "={{ JSON.parse($json.output.replace(/```json|```/g, \"\")).description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        -176
+      ],
+      "id": "040bc466-52ce-42d8-a277-687323e00fcc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        -32
+      ],
+      "id": "e5e9331a-1617-4e24-9983-dc7531ecbaa3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "name"
+        },
+        "limit": 10,
+        "where": {
+          "values": [
+            {
+              "column": "message",
+              "condition": "IS NOT NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -912,
+        -80
+      ],
+      "id": "4acd01f1-6a5b-4f36-aa8b-9f95e084bb55",
+      "name": "POSTGRES_CHECK",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "lfSY5upY7AYc701n",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        -120
+      ],
+      "id": "23dd8ac6-bffc-4317-9ad6-5db7c168a9fe",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "BEGIN;\n  UPDATE daily_news_art SET is_active = FALSE WHERE is_active = TRUE;\n  INSERT INTO daily_news_art (headline, description, image_url, is_active) \n  VALUES ($1, $2, $3, TRUE);\nCOMMIT;",
+        "options": {
+          "queryReplacement": "=Value 1: {{ $json.headline }}\n\nValue 2: {{ $json.description }}\n\nValue 3: {{ $json.secure_url }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1008,
+        -8
+      ],
+      "id": "c741bb29-85e1-4f6e-8d48-0b3431d05ff9",
+      "name": "Save entry in DB",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "lfSY5upY7AYc701n",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM daily_news_art\nWHERE id NOT IN (\n    SELECT id \n    FROM daily_news_art \n    ORDER BY generated_at DESC \n    LIMIT 7\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        -104
+      ],
+      "id": "95d0b526-07f2-4511-a0ba-cadfb87663f1",
+      "name": "Delete anything over 7 in DB",
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "lfSY5upY7AYc701n",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (message) \nVALUES ($1);",
+        "options": {
+          "queryReplacement": "=Value 1: {{ $json.headline }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        336,
+        -320
+      ],
+      "id": "e142ed9f-569e-4f0c-aa36-9441f3940fb7",
+      "name": "Execute a SQL query",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "lfSY5upY7AYc701n",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=(\"BBC News\" OR \"Al Jazeera\")&language=en&apiKey=47ae280bbd584811a9ea7fcbf44b1aca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -912,
+        -272
+      ],
+      "id": "f0598093-5936-4d70-bc63-5bf0d6e7e2c0",
+      "name": "BBC and Al-Jazeera news",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -688,
+        -176
+      ],
+      "id": "a5bcfcdb-a074-485d-bf2f-e9df418fa80e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the merged data\nconst items = $input.all();\n\n// Extract previous headlines from POSTGRES_CHECK\nconst previousHeadlines = items\n  .filter(item => item.json.message && typeof item.json.message === 'string')\n  .map(item => {\n    // Skip the malformed JSON entries\n    if (item.json.message.startsWith('```json')) {\n      return null;\n    }\n    return item.json.message;\n  })\n  .filter(Boolean)\n  .slice(0, 10); // Limit to last 10\n\n// Extract news articles\nconst newsArticles = items\n  .filter(item => item.json.articles && Array.isArray(item.json.articles))\n  .flatMap(item => item.json.articles);\n\n// Format headlines as clean numbered list\nconst currentHeadlines = newsArticles\n  .filter(article => article.title && article.title.length > 10)\n  .slice(0, 30) // Top 30 only\n  .map((article, index) => `${index + 1}. ${article.title}`)\n  .join('\\n');\n\n// Create clean prompt input\nconst promptText = `\nPREVIOUSLY SELECTED HEADLINES (avoid these topics):\n${previousHeadlines.length > 0 ? previousHeadlines.map((h, i) => `- ${h}`).join('\\n') : '(None)'}\n\nCURRENT AVAILABLE HEADLINES:\n${currentHeadlines}\n\n`.trim();\n\nreturn [{\n  json: {\n    prompt: promptText,\n    article_count: newsArticles.length,\n    previous_count: previousHeadlines.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -176
+      ],
+      "id": "0fdb005c-baff-4a77-b84f-3e6c9b4a6671",
+      "name": "Format input for agent"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM n8n_chat_histories\nWHERE id NOT IN (\n    SELECT id FROM (\n        SELECT id FROM n8n_chat_histories \n        WHERE \"date\" >= CURRENT_DATE - INTERVAL '7 days'\n        ORDER BY \"date\" DESC, id DESC \n        LIMIT 10\n    ) x\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        88
+      ],
+      "id": "d199366f-14d0-4438-9923-e1768cd471ff",
+      "name": "Delete anything over 7 in DB1",
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "lfSY5upY7AYc701n",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily News bot": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Daily News bot",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate image": {
+      "main": [
+        [
+          {
+            "node": "Upload an asset from file data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "POSTGRES_CHECK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC and Al-Jazeera news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload an asset from file data": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "POSTGRES_CHECK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC and Al-Jazeera news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POSTGRES_CHECK": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save entry in DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save entry in DB": {
+      "main": [
+        [
+          {
+            "node": "Delete anything over 7 in DB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete anything over 7 in DB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    },
+    "BBC and Al-Jazeera news": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format input for agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format input for agent": {
+      "main": [
+        [
+          {
+            "node": "Daily News bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a0ea2754-572d-4cd4-a756-388b7e44ba25",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "498bdd8b12e0b499affdb564c88bf7350ec629c90ea4b1ad1764e80fdaf7f72d"
+  },
+  "id": "W0WYqH_Sfjee2N5jJIrrO",
+  "tags": []
+}

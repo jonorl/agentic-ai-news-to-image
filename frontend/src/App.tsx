@@ -1,4 +1,60 @@
+import { useState, useEffect } from 'react';
+
+interface NewsData {
+  headline: string;
+  description: string;
+  imageUrl: string;
+  timestamp?: string;
+}
+
 export default function NewsWorkflowDemo() {
+  const [newsData, setNewsData] = useState<NewsData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  // Replace with your actual n8n webhook URL
+  const WEBHOOK_URL = 'https://test--news-to-image--6qlkrj2746gd.code.run/webhook/news-workflow';
+
+  const fetchNews = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      setNewsData({
+        headline: data.headline,
+        description: data.description,
+        imageUrl: data.imageUrl
+      });
+      
+      setLastUpdated(new Date().toLocaleString());
+    } catch (err) {
+      console.error("Failed to fetch news:", err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch news');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-fetch on mount (optional - remove if you want manual only)
+  useEffect(() => {
+    // Uncomment the line below to auto-fetch on page load
+    // fetchNews();
+  }, []);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50">
       {/* Background effects */}
@@ -127,28 +183,59 @@ export default function NewsWorkflowDemo() {
 
         {/* Live Output Demo */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-10">Latest Output</h2>
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-3xl font-bold">Latest Output</h2>
+            <button
+              onClick={fetchNews}
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg font-medium hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Fetching...
+                </>
+              ) : (
+                <>
+                  <span>⚡</span>
+                  Trigger Workflow
+                </>
+              )}
+            </button>
+          </div>
+
+          {lastUpdated && (
+            <div className="mb-4 text-sm text-neutral-500">
+              Last updated: {lastUpdated}
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+              Error: {error}
+            </div>
+          )}
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Text Output */}
             <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8">
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <div className={`w-2 h-2 rounded-full ${newsData ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-600'}`} />
                 <span className="text-xs font-medium text-neutral-500 tracking-wider uppercase">Headline Output</span>
               </div>
               
               <div className="space-y-4">
                 <div className="bg-neutral-950/50 rounded-lg p-5 border border-neutral-800">
                   <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-medium">Selected Headline</p>
-                  <p className="text-base leading-relaxed text-neutral-300 italic">
-                    [Headline will appear here after workflow execution]
+                  <p className="text-base leading-relaxed text-neutral-300">
+                    {newsData?.headline || 'Click "Trigger Workflow" to fetch the latest news headline'}
                   </p>
                 </div>
                 
                 <div className="bg-neutral-950/50 rounded-lg p-5 border border-neutral-800">
                   <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-medium">Visual Description</p>
                   <p className="text-sm leading-relaxed text-neutral-400">
-                    [AI-generated visual description for image synthesis will appear here]
+                    {newsData?.description || 'AI-generated visual description will appear here'}
                   </p>
                 </div>
               </div>
@@ -157,19 +244,33 @@ export default function NewsWorkflowDemo() {
             {/* Image Output */}
             <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8">
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
+                <div className={`w-2 h-2 rounded-full ${newsData ? 'bg-violet-500 animate-pulse' : 'bg-neutral-600'}`} />
                 <span className="text-xs font-medium text-neutral-500 tracking-wider uppercase">Generated Image</span>
               </div>
               
               <div className="aspect-[4/3] bg-neutral-950/50 rounded-lg border border-neutral-800 flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative text-center p-8">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center text-3xl">
-                    🖼️
-                  </div>
-                  <p className="text-sm text-neutral-500 mb-1">Generated image will be displayed here</p>
-                  <p className="text-xs text-neutral-600">Via Pollinations.ai</p>
-                </div>
+                {newsData?.imageUrl ? (
+                  <img 
+                    src={newsData.imageUrl} 
+                    alt={newsData.headline}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative text-center p-8">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center text-3xl">
+                        🖼️
+                      </div>
+                      <p className="text-sm text-neutral-500 mb-1">Generated image will be displayed here</p>
+                      <p className="text-xs text-neutral-600">Via Pollinations.ai</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
