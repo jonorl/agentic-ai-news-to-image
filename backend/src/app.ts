@@ -1,7 +1,6 @@
 import express, { type Application } from 'express';
 import cors from 'cors';
 import mainRouter from './routes/mainRouter.js';
-// Assuming queries.ts exports something or is just executed
 import './db/queries.js'; 
 
 const app: Application = express();
