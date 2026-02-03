@@ -7,18 +7,86 @@ interface NewsData {
   timestamp?: string;
 }
 
+const LOADING_MESSAGES = [
+  "Waking up free-tier servers...",
+  "Analyzing global news sources...",
+  "Consulting with AI agent...",
+  "Evaluating headline impact...",
+  "Checking 7-day memory buffer...",
+  "Generating visual description...",
+  "Creating artistic representation...",
+  "Uploading to cloud storage...",
+  "Finalizing selection...",
+  "Almost there..."
+];
+
 export default function NewsWorkflowDemo() {
   const [newsData, setNewsData] = useState<NewsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
+  const [isStaticMode, setIsStaticMode] = useState(true);
 
-  // Replace with your actual n8n webhook URL
-  const WEBHOOK_URL = 'https://test--news-to-image--6qlkrj2746gd.code.run/webhook/news-workflow';
+  // API URLs
+  const STATIC_API_URL = 'http://cute-harriott-agentic-ai-jon-7ba6f031.koyeb.app/api/v1/news';
+  const WEBHOOK_URL = 'https://test--news-to-image--6qlkrj2746gd.code.run/webhook/89edac54-141b-4f2b-b784-bdb4172143fb';
 
-  const fetchNews = async () => {
+  // Rotate loading messages
+  useEffect(() => {
+    if (!loading) return;
+
+    let messageIndex = 0;
+    const interval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % LOADING_MESSAGES.length;
+      setLoadingMessage(LOADING_MESSAGES[messageIndex]);
+    }, 2500); // Change message every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const fetchStaticNews = async () => {
     setLoading(true);
     setError(null);
+    setLoadingMessage(LOADING_MESSAGES[0]);
+    
+    try {
+      const response = await fetch(STATIC_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Extract from nested structure
+      const newsItem = data.getActiveNews || data;
+      
+      setNewsData({
+        headline: newsItem.headline,
+        description: newsItem.description,
+        imageUrl: newsItem.image_url || newsItem.imageUrl
+      });
+      
+      setLastUpdated(new Date().toLocaleString());
+      setIsStaticMode(true);
+    } catch (err) {
+      console.error("Failed to fetch static news:", err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch news from static API');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDynamicNews = async () => {
+    setLoading(true);
+    setError(null);
+    setLoadingMessage(LOADING_MESSAGES[0]);
     
     try {
       const response = await fetch(WEBHOOK_URL, {
@@ -37,22 +105,22 @@ export default function NewsWorkflowDemo() {
       setNewsData({
         headline: data.headline,
         description: data.description,
-        imageUrl: data.imageUrl
+        imageUrl: data.image_url || data.imageUrl
       });
       
       setLastUpdated(new Date().toLocaleString());
+      setIsStaticMode(false);
     } catch (err) {
-      console.error("Failed to fetch news:", err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch news');
+      console.error("Failed to fetch dynamic news:", err);
+      setError(err instanceof Error ? err.message : 'Failed to trigger workflow');
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-fetch on mount (optional - remove if you want manual only)
+  // Auto-fetch static news on mount
   useEffect(() => {
-    // Uncomment the line below to auto-fetch on page load
-    // fetchNews();
+    fetchStaticNews();
   }, []);
 
   return (
@@ -183,36 +251,82 @@ export default function NewsWorkflowDemo() {
 
         {/* Live Output Demo */}
         <section className="mb-20">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
             <h2 className="text-3xl font-bold">Latest Output</h2>
-            <button
-              onClick={fetchNews}
-              disabled={loading}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg font-medium hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Fetching...
-                </>
-              ) : (
-                <>
-                  <span>⚡</span>
-                  Trigger Workflow
-                </>
-              )}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={fetchStaticNews}
+                disabled={loading}
+                className="px-4 py-2.5 bg-neutral-800 text-white rounded-lg font-medium hover:bg-neutral-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm border border-neutral-700"
+              >
+                <span>📰</span>
+                Today's Selection
+              </button>
+              <button
+                onClick={fetchDynamicNews}
+                disabled={loading}
+                className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg font-medium hover:from-emerald-600 hover:to-cyan-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+              >
+                <span>⚡</span>
+                Generate New
+              </button>
+            </div>
           </div>
 
           {lastUpdated && (
-            <div className="mb-4 text-sm text-neutral-500">
-              Last updated: {lastUpdated}
+            <div className="mb-4 flex items-center gap-2 text-sm text-neutral-500">
+              <span>Last updated: {lastUpdated}</span>
+              <span className="text-neutral-700">•</span>
+              <span className={isStaticMode ? 'text-neutral-400' : 'text-emerald-400'}>
+                {isStaticMode ? 'Static (Daily)' : 'Dynamic (On-Demand)'}
+              </span>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
-              Error: {error}
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 flex items-start gap-3">
+              <span className="text-xl">⚠️</span>
+              <div className="flex-1">
+                <p className="font-medium mb-1">Error</p>
+                <p className="text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Smart Loading Overlay */}
+          {loading && (
+            <div className="mb-6 p-8 bg-gradient-to-br from-emerald-500/5 to-violet-500/5 border border-emerald-500/20 rounded-xl">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                {/* Animated spinner */}
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-neutral-700 border-t-emerald-500 rounded-full animate-spin" />
+                  <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-cyan-500 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }} />
+                </div>
+                
+                {/* Rotating message */}
+                <div className="text-center">
+                  <p className="text-emerald-400 font-medium mb-1 animate-pulse">
+                    {loadingMessage}
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    Free-tier services may take 20-40 seconds to wake up
+                  </p>
+                </div>
+
+                {/* Progress dots */}
+                <div className="flex gap-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-2 h-2 rounded-full bg-emerald-500"
+                      style={{
+                        animation: 'pulse 1.5s ease-in-out infinite',
+                        animationDelay: `${i * 0.2}s`
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           )}
           
@@ -228,7 +342,7 @@ export default function NewsWorkflowDemo() {
                 <div className="bg-neutral-950/50 rounded-lg p-5 border border-neutral-800">
                   <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-medium">Selected Headline</p>
                   <p className="text-base leading-relaxed text-neutral-300">
-                    {newsData?.headline || 'Click "Trigger Workflow" to fetch the latest news headline'}
+                    {newsData?.headline || 'Loading today\'s headline...'}
                   </p>
                 </div>
                 
@@ -249,14 +363,21 @@ export default function NewsWorkflowDemo() {
               </div>
               
               <div className="aspect-[4/3] bg-neutral-950/50 rounded-lg border border-neutral-800 flex items-center justify-center relative overflow-hidden group">
-                {newsData?.imageUrl ? (
+                {loading ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-12 h-12 mx-auto mb-3 border-4 border-neutral-700 border-t-violet-500 rounded-full animate-spin" />
+                      <p className="text-xs text-neutral-500">Generating image...</p>
+                    </div>
+                  </div>
+                ) : newsData?.imageUrl ? (
                   <img 
                     src={newsData.imageUrl} 
                     alt={newsData.headline}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-opacity duration-300"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
+                      target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23171717" width="400" height="300"/%3E%3Ctext fill="%23525252" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3EImage failed to load%3C/text%3E%3C/svg%3E';
                     }}
                   />
                 ) : (
@@ -266,7 +387,7 @@ export default function NewsWorkflowDemo() {
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center text-3xl">
                         🖼️
                       </div>
-                      <p className="text-sm text-neutral-500 mb-1">Generated image will be displayed here</p>
+                      <p className="text-sm text-neutral-500 mb-1">Loading image...</p>
                       <p className="text-xs text-neutral-600">Via Pollinations.ai</p>
                     </div>
                   </>
@@ -282,21 +403,21 @@ export default function NewsWorkflowDemo() {
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
-              'n8n',
-              'Google Gemini',
-              'Pollinations.ai',
-              'LangChain',
-              'BBC News',
-              'Al Jazeera'
+              { name: 'n8n', color: 'from-red-500/20 to-pink-500/20' },
+              { name: 'Google Gemini', color: 'from-blue-500/20 to-cyan-500/20' },
+              { name: 'Pollinations.ai', color: 'from-purple-500/20 to-violet-500/20' },
+              { name: 'PostgreSQL', color: 'from-blue-600/20 to-indigo-500/20' },
+              { name: 'BBC News', color: 'from-orange-500/20 to-red-500/20' },
+              { name: 'Al Jazeera', color: 'from-emerald-500/20 to-teal-500/20' }
             ].map((tech, idx) => (
               <div 
                 key={idx}
                 className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-lg p-4 text-center hover:border-neutral-700 transition-all duration-300"
               >
-                <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-violet-500/20 flex items-center justify-center text-lg font-bold">
-                  {tech.charAt(0)}
+                <div className={`w-10 h-10 mx-auto mb-2 rounded-lg bg-gradient-to-br ${tech.color} flex items-center justify-center text-sm font-bold`}>
+                  {tech.name.charAt(0)}
                 </div>
-                <p className="text-xs text-neutral-400">{tech}</p>
+                <p className="text-xs text-neutral-400">{tech.name}</p>
               </div>
             ))}
           </div>
@@ -336,6 +457,19 @@ export default function NewsWorkflowDemo() {
           </div>
         </section>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(0.8);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }
