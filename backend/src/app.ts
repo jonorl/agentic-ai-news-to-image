@@ -5,7 +5,12 @@ import './db/queries.js';
 
 const app: Application = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: 'https://agentic-ai-news-to-image.pages.dev',
+  optionsSuccessStatus: 200 
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/", mainRouter);
