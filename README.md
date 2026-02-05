@@ -133,5 +133,3 @@ Return ONLY a valid JSON object:
 ## Contact
 
 [Jonathan Orlowski](https://jonathan-orlowski.pages.dev/)
-
-Project Link: [https://github.com/jonorl/agentic-ai-news-to-image](https://github.com/jonorl/agentic-ai-news-to-image)
