@@ -36,7 +36,6 @@ This system demonstrates advanced workflow automation and AI orchestration by co
 
 ## Execution Pipeline
 
-```
 1. Trigger → Webhook or scheduled cron job initiates workflow
 
 2. Data Collection → Fetches NewsAPI headlines, merges with 10-headline 
@@ -56,7 +55,6 @@ This system demonstrates advanced workflow automation and AI orchestration by co
    keeps last 7 for rotation
 
 8. Response → Returns JSON to webhook caller with complete data
-```
 
 ## Technology Stack
 
