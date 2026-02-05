@@ -134,4 +134,4 @@ Return ONLY a valid JSON object:
 
 [Jonathan Orlowski](https://jonathan-orlowski.pages.dev/)
 
-Project Link: [https://github.com/yourusername/agentic-news-intelligence](https://github.com/yourusername/agentic-news-intelligence)
+Project Link: [https://github.com/jonorl/agentic-news-intelligence](https://github.com/yourusername/agentic-news-intelligence)
