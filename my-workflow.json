@@ -1,0 +1,754 @@
+{
+  "name": "Agentic AI News bot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=#ROLE\nYou are an editorial selector for a news-to-art website.\n\n#TASK\nChoose ONE impactful, globally relevant news headline from the list below.\n\n#SELECTION CRITERIA\n1. Pick the most impactful and globally relevant headline\n2. Avoid headlines substantially similar to previously selected ones\n3. \"Substantially similar\" means same event, person, or topic (even if worded differently)\n4. If all headlines are similar, choose the least similar option\n\n{{ $json.prompt }}\n\n#OUTPUT FORMAT (STRICT)\nReturn ONLY a valid JSON object:\n{\n  \"headline\": \"exact headline text from the numbered list\",\n  \"description\": \"short visual description, max 20 words, concrete imagery\"\n}\n\nDo NOT include any other text, markdown, or explanation.",
+        "needsFallback": true,
+        "options": {
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1344,
+        160
+      ],
+      "id": "f49c53e4-6b27-4ef5-a50e-5444b31de32f",
+      "name": "Daily News bot"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"headline\": $json.headline, \"description\": $json.description, \"imageUrl\": $json.secure_url } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2592,
+        48
+      ],
+      "id": "154fd4f7-db74-4e70-8ae0-547df347e773",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "89edac54-141b-4f2b-b784-bdb4172143fb",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        16
+      ],
+      "id": "8d4864cd-676e-4baa-9f85-25f3cbe22edd",
+      "name": "Webhook",
+      "webhookId": "89edac54-141b-4f2b-b784-bdb4172143fb"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        400
+      ],
+      "id": "d0bdb978-b0fb-4917-9381-e43d02b7d891",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "  INSERT INTO daily_news_art (image_url, headline, description) \n  VALUES ($1, $2, $3);",
+        "options": {
+          "queryReplacement": "=Value 1: {{ $json.secure_url }}\nValue 2: {{ $json.headline }}\nValue 3: {{ $json.description }}\n"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        240
+      ],
+      "id": "46546249-7ac3-4ea9-bace-7cbf200ba8aa",
+      "name": "Save entry in DB",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM daily_news_art\nWHERE is_active = false\nAND id NOT IN (\n    SELECT id \n    FROM daily_news_art \n    ORDER BY generated_at DESC \n    LIMIT 7\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2816,
+        160
+      ],
+      "id": "b7ba678b-2705-4de5-a460-0444b01e7781",
+      "name": "Delete anything over 7 in DB",
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything?q=(\"BBC News\" OR \"Al Jazeera\")&language=en&apiKey=47ae280bbd584811a9ea7fcbf44b1aca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        64
+      ],
+      "id": "683cb277-32fd-4962-8d74-864210c6a442",
+      "name": "BBC and Al-Jazeera news",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the merged data\nconst items = $input.all();\n\n// Extract previous headlines from POSTGRES_CHECK\nconst previousHeadlines = items\n  .filter(item => item.json.message && typeof item.json.message === 'string')\n  .map(item => {\n    // Skip the malformed JSON entries\n    if (item.json.message.startsWith('```json')) {\n      return null;\n    }\n    return item.json.message;\n  })\n  .filter(Boolean)\n  .slice(0, 10); // Limit to last 10\n\n// Extract news articles\nconst newsArticles = items\n  .filter(item => item.json.articles && Array.isArray(item.json.articles))\n  .flatMap(item => item.json.articles);\n\n// Format headlines as clean numbered list\nconst currentHeadlines = newsArticles\n  .filter(article => article.title && article.title.length > 10)\n  .slice(0, 30) // Top 30 only\n  .map((article, index) => `${index + 1}. ${article.title}`)\n  .join('\\n');\n\n// Create clean prompt input\nconst promptText = `\nPREVIOUSLY SELECTED HEADLINES (avoid these topics):\n${previousHeadlines.length > 0 ? previousHeadlines.map((h, i) => `- ${h}`).join('\\n') : '(None)'}\n\nCURRENT AVAILABLE HEADLINES:\n${currentHeadlines}\n\n`.trim();\n\nreturn [{\n  json: {\n    prompt: promptText,\n    article_count: newsArticles.length,\n    previous_count: previousHeadlines.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        160
+      ],
+      "id": "3b096d34-85c2-4af1-b56c-5f42aef96f05",
+      "name": "Format input for agent"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\n  UPDATE daily_news_art SET is_active = FALSE WHERE is_active = TRUE;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2832,
+        560
+      ],
+      "id": "e3a6f686-28a2-425a-9878-3cd3c8a48bc2",
+      "name": "Remove active values",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // This removes commas (,) and apostrophes (') from both fields\n  item.json.headline = item.json.headline.replace(/[',]/g, \"\");\n  item.json.description = item.json.description.replace(/[',]/g, \"\");\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        160
+      ],
+      "id": "8de0cb3e-5e2b-41a9-905f-95070ee51288",
+      "name": "Clean output"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_chat_histories",
+          "mode": "name"
+        },
+        "limit": 10,
+        "where": {
+          "values": [
+            {
+              "column": "message",
+              "condition": "IS NOT NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        672,
+        256
+      ],
+      "id": "db97fbfb-1c84-4573-bb7a-56bfb5013e5c",
+      "name": "Memory check",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        896,
+        160
+      ],
+      "id": "747ce45e-abb6-4761-b10e-0071a24a5383",
+      "name": "Merge 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "42a0a5a8-2262-4e73-9058-43a27fda464b",
+              "name": "headline",
+              "value": "={{ JSON.parse($json.output.replace(/```json|```/g, \"\")).headline }}",
+              "type": "string"
+            },
+            {
+              "id": "1b5f4dc8-8b6f-45b6-a67e-97ef6cb4a643",
+              "name": "description",
+              "value": "={{ JSON.parse($json.output.replace(/```json|```/g, \"\")).description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        160
+      ],
+      "id": "26beb87e-0ae2-4ca5-873e-1c9387283110",
+      "name": "Filter results"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (message) \nVALUES ($1);",
+        "options": {
+          "queryReplacement": "=Value 1: {{ $json.headline }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1920,
+        16
+      ],
+      "id": "fc1afe51-0e6e-457f-8555-3bd6d65de2eb",
+      "name": "Add to memory",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "additionalFieldsFile": {
+          "folder": "agentic-ai"
+        }
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        352
+      ],
+      "id": "6365c920-89c5-4c28-bb3a-a1d37ff46169",
+      "name": "Upload to Cloudinary",
+      "retryOnFail": true,
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "y95iMwhKl94B0NcM",
+          "name": "Cloudinary account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "image/png"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.description }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1920,
+        352
+      ],
+      "id": "b03f7b18-8653-4df9-8716-96da414d5c29",
+      "name": "Flux1 image gen",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "mi6VLDA3O4QbcmaI",
+          "name": "Bearer Auth account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2368,
+        240
+      ],
+      "id": "bcfbed0a-f29e-4c27-a0ce-3f93a384f343",
+      "name": "Merge 2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM n8n_chat_histories\nWHERE id NOT IN (\n    SELECT id FROM (\n        SELECT id FROM n8n_chat_histories \n        WHERE \"date\" >= CURRENT_DATE - INTERVAL '7 days'\n        ORDER BY \"date\" DESC, id DESC \n        LIMIT 10\n    ) x\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2816,
+        352
+      ],
+      "id": "0fdd9454-97bc-4432-ba1c-3b17e9c277c0",
+      "name": "Delete anything over 7 in memory",
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE daily_news_art\nSET is_active = true\nWHERE id = (\n    SELECT id \n    FROM daily_news_art \n    ORDER BY created_at DESC \n    LIMIT 1\n);",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3024,
+        560
+      ],
+      "id": "45376274-f752-4ead-847e-bd8aaa783f08",
+      "name": "Make latest entry active",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "0oN70wS4fjcCaCy0",
+          "name": "Unnamed credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        384
+      ],
+      "id": "918121af-923f-48be-8a7a-ca6464160882",
+      "name": "Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "q8Uipzse5qz57Bcr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        384
+      ],
+      "id": "091a18f4-89de-4df1-8940-f58defda0e39",
+      "name": "Groq (fallback)",
+      "credentials": {
+        "groqApi": {
+          "id": "K7PhWxndXqoRLaZK",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f594b95-5cff-4eb1-ba8e-56230d52e5ae",
+              "leftValue": "={{ $('Webhook').isExecuted }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2592,
+        544
+      ],
+      "id": "82fd45de-5baa-4c95-8847-5bbec09a843f",
+      "name": "If triggered from webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily News bot": {
+      "main": [
+        [
+          {
+            "node": "Filter results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Memory check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC and Al-Jazeera news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Memory check",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC and Al-Jazeera news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save entry in DB": {
+      "main": [
+        [
+          {
+            "node": "Delete anything over 7 in DB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete anything over 7 in memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BBC and Al-Jazeera news": {
+      "main": [
+        [
+          {
+            "node": "Merge 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format input for agent": {
+      "main": [
+        [
+          {
+            "node": "Daily News bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove active values": {
+      "main": [
+        [
+          {
+            "node": "Make latest entry active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Clean output": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory check": {
+      "main": [
+        [
+          {
+            "node": "Merge 1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge 1": {
+      "main": [
+        [
+          {
+            "node": "Format input for agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter results": {
+      "main": [
+        [
+          {
+            "node": "Add to memory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Flux1 image gen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Clean output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to memory": {
+      "main": [
+        []
+      ]
+    },
+    "Upload to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Flux1 image gen": {
+      "main": [
+        [
+          {
+            "node": "Upload to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge 2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save entry in DB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If triggered from webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Daily News bot",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq (fallback)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Daily News bot",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If triggered from webhook": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Remove active values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Africa/Kampala",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "1d90a76f-27d9-46b3-a07d-386aac25e544",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91b510c3e87df8b6f7db922b788007f7985a59218ccf7435ae053184aedbc847"
+  },
+  "id": "uopLzDtsH0Cu4dsU8aKdt",
+  "tags": []
+}
