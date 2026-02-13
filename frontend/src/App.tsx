@@ -15,7 +15,7 @@ const LOADING_MESSAGES = [
   "Gemini evaluating headline uniqueness...",
   "Selecting most relevant story...",
   "Generating 20-word visual prompt...",
-  "Flux1 creating artistic representation...",
+  "AI creating artistic representation...",
   "Uploading to Cloudinary CDN...",
   "Saving to PostgreSQL database...",
   "Updating active entry status...",
@@ -151,7 +151,7 @@ export default function NewsWorkflowDemo() {
           
           <p className="text-lg lg:text-xl text-neutral-400 max-w-3xl leading-relaxed">
             An autonomous AI workflow that monitors global news sources, intelligently selects the most impactful headlines 
-            using dual AI models with fallback, and generates high-quality visual representations via Flux1—while maintaining 
+            using dual AI models with fallback, and generates high-quality visual representations via Flux1 (or Pollinations as fallback) while maintaining 
             a 10-headline memory buffer to ensure content novelty.
           </p>
         </header>
@@ -347,7 +347,7 @@ export default function NewsWorkflowDemo() {
                         🖼️
                       </div>
                       <p className="text-sm text-neutral-500 mb-1">Loading image...</p>
-                      <p className="text-xs text-neutral-600">Via Flux1 Schnell + Cloudinary</p>
+                      <p className="text-xs text-neutral-600">Via Flux1 Schnell (or fallback) + Cloudinary</p>
                     </div>
                   </>
                 )}
