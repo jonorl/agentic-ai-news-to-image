@@ -17,7 +17,7 @@ const LOADING_MESSAGES = [
   "Generating 20-word visual prompt...",
   "AI creating artistic representation...",
   "Uploading to Cloudinary CDN...",
-  "Saving to PostgreSQL database...",
+  "Saving to PostgreSQL db...",
   "Updating active entry status...",
   "Almost there..."
 ];
