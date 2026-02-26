@@ -6,7 +6,10 @@ import './db/queries.js';
 const app: Application = express();
 
 const corsOptions = {
-  origin: 'https://agentic-ai-news-to-image.pages.dev',
+  origin: [
+    'https://agentic-ai-news-to-image.pages.dev', 
+    'https://jonathan-orlowski.dev',
+  ],
   optionsSuccessStatus: 200 
 };
 
