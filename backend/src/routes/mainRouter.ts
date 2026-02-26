@@ -8,7 +8,7 @@ mainRouter.post('/api/v1/news', async (req: Request, res: Response) => {
     const getActiveNews = await db.getActiveNews();
     res.json({ getActiveNews });
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
   }
 });
 
