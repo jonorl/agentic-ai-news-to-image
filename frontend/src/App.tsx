@@ -489,7 +489,7 @@ export default function NewsWorkflowDemo() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-center md:text-left">
               <a
-                href="https://jonathan-orlowski.pages.dev/"
+                href="https://jonathan-orlowski.dev/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-yellow-400 transition-colors"

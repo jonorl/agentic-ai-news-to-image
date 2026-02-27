@@ -1,6 +1,6 @@
 # Agentic News Intelligence System
 
-An autonomous AI workflow that monitors global news sources, intelligently selects the most impactful headlines using dual AI models with fallback, and generates high-quality visual representations via Flux1—while maintaining a 10-headline memory buffer to ensure content novelty.
+An autonomous AI workflow that monitors global news sources, intelligently selects the most impactful headlines using dual AI models with fallback, and generates high-quality visual representations via Flux1-while maintaining a 10-headline memory buffer to ensure content novelty.
 
 ## Project Overview
 
