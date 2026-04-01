@@ -1,129 +1,7 @@
-import { useState, useEffect } from 'react';
-
-interface NewsData {
-  headline: string;
-  description: string;
-  imageUrl: string;
-  timestamp?: string;
-}
-
-const LOADING_MESSAGES = [
-  "Waking up free-tier servers...",
-  "Fetching BBC News & Al Jazeera feeds...",
-  "Querying memory buffer (last 10 headlines)...",
-  "AI agent analyzing global impact...",
-  "Gemini evaluating headline uniqueness...",
-  "Selecting most relevant story...",
-  "Generating 20-word visual prompt...",
-  "AI creating artistic representation...",
-  "Uploading to Cloudinary CDN...",
-  "Saving to PostgreSQL db...",
-  "Updating active entry status...",
-  "Almost there..."
-];
+import { useNews } from './hooks/useNews'
 
 export default function NewsWorkflowDemo() {
-  const [newsData, setNewsData] = useState<NewsData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
-  const [isStaticMode, setIsStaticMode] = useState(true);
-
-  // API URLs
-  const STATIC_API_URL = import.meta.env.VITE_BACKEND;
-  const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK;
-
-  // Rotate loading messages
-  useEffect(() => {
-    if (!loading) return;
-
-    let messageIndex = 0;
-    const interval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % LOADING_MESSAGES.length;
-      setLoadingMessage(LOADING_MESSAGES[messageIndex]);
-    }, 2500); // Change message every 2.5 seconds
-
-    return () => clearInterval(interval);
-  }, [loading]);
-
-  const fetchStaticNews = async () => {
-    setLoading(true);
-    setError(null);
-    setLoadingMessage(LOADING_MESSAGES[0]);
-    
-    try {
-      const response = await fetch(STATIC_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      // Extract from nested structure
-      const newsItem = data.getActiveNews || data;
-      
-      setNewsData({
-        headline: newsItem.headline,
-        description: newsItem.description,
-        imageUrl: newsItem.image_url || newsItem.imageUrl
-      });
-      
-      setLastUpdated(new Date().toLocaleString());
-      setIsStaticMode(true);
-    } catch (err) {
-      console.error("Failed to fetch static news:", err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch news from static API');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDynamicNews = async () => {
-    setLoading(true);
-    setError(null);
-    setLoadingMessage(LOADING_MESSAGES[0]);
-    
-    try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      setNewsData({
-        headline: data.headline,
-        description: data.description,
-        imageUrl: data.imageUrl
-      });
-      
-      setLastUpdated(new Date().toLocaleString());
-      setIsStaticMode(false);
-    } catch (err) {
-      console.error("Failed to fetch dynamic news:", err);
-      setError(err instanceof Error ? err.message : 'Failed to trigger workflow');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Auto-fetch static news on mount
-  useEffect(() => {
-    fetchStaticNews();
-  }, []);
+  const { newsData, loading, isStaticMode, loadingMessage, lastUpdated, error, fetchStatic, fetchDynamic } = useNews();
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-50">
@@ -217,14 +95,14 @@ export default function NewsWorkflowDemo() {
               </div>
               <div className="flex gap-3">
                 <button
-                  onClick={fetchStaticNews}
+                  onClick={fetchStatic}
                   disabled={loading}
                   className="px-6 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 rounded-lg font-medium text-emerald-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Fetch Static
                 </button>
                 <button
-                  onClick={fetchDynamicNews}
+                  onClick={fetchDynamic}
                   disabled={loading}
                   className="px-6 py-2.5 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 hover:border-violet-500/50 rounded-lg font-medium text-violet-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
