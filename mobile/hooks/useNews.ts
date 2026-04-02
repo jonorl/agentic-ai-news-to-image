@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { fetchNews } from '../../../shared/hooks/useNewsCore';
-import { LOADING_MESSAGES } from '../../../shared/constants/messages';
-import type { NewsData } from '../../../shared/types/interfaces';
+import { fetchNews } from '../../shared/hooks/useNewsCore';
+import { LOADING_MESSAGES } from '../../shared/constants/messages';
+import type { NewsData } from '../../shared/types/interfaces';
 
 export function useNews() {
   const [newsData, setNewsData] = useState<NewsData | null>(null);
@@ -11,8 +11,12 @@ export function useNews() {
   const [isStaticMode, setIsStaticMode] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
-  const STATIC_API_URL = import.meta.env.VITE_BACKEND;
-  const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK;
+  // mobile/hooks/useNews.ts
+
+  // Use a safe check to prevent Hermes from crashing on import.meta
+  const STATIC_API_URL = process.env?.EXPO_PUBLIC_VITE_BACKEND
+
+  const WEBHOOK_URL = process.env?.EXPO_PUBLIC_VITE_WEBHOOK
 
   useEffect(() => {
     if (!loading) return;
