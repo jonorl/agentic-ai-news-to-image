@@ -3,15 +3,15 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "jsxImportSource": "nativewind",
-    "paths": {
-      "*": [
-        "./node_modules/*"
-      ],
-      "nativewind/*": [
-        "./node_modules/nativewind/*"
-      ]
-    }
+    // "jsxImportSource": "nativewind",
+    // "paths": {
+    //   "*": [
+    //     "./node_modules/*"
+    //   ],
+    //   "nativewind/*": [
+    //     "./node_modules/nativewind/*"
+    //   ]
+    // }
   },
   "include": [
     "**/*.ts",
