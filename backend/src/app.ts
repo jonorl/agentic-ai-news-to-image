@@ -1,20 +1,28 @@
 import express, { type Application, type Request, type Response, type NextFunction } from 'express';
-import cors from 'cors';
+import cors, { type CorsOptions } from 'cors';
 import mainRouter from './routes/mainRouter.js';
-import './db/queries.js'; 
+import './db/queries.js';
 
 const app: Application = express();
-const isDevelopment = process.env.NODE_ENV ? process.env.NODE_ENV === 'development': false;
+const isDevelopment = process.env.NODE_ENV ? process.env.NODE_ENV === 'development' : false;
 
-const corsOptions = {
-  origin: isDevelopment 
-    ? '*' // Allow everything in dev for easier debugging
-    : [
-        'https://agentic-ai-news-to-image.pages.dev', 
-        'https://jonathan-orlowski.dev',
-      ],
-  optionsSuccessStatus: 200 
+const allowedOrigins = [
+  'https://agentic-ai-news-to-image.pages.dev',
+  'https://jonathan-orlowski.dev'
+];
+
+const corsOptions: CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (isDevelopment || !origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200
 };
+
+app.use(cors(corsOptions));
 
 app.use(cors(corsOptions));
 app.use(express.json());
