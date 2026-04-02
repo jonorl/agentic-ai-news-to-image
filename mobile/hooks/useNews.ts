@@ -14,9 +14,9 @@ export function useNews() {
   // mobile/hooks/useNews.ts
 
   // Use a safe check to prevent Hermes from crashing on import.meta
-  const STATIC_API_URL = process.env?.EXPO_PUBLIC_VITE_BACKEND
+  const STATIC_API_URL = process.env?.EXPO_PUBLIC_BACKEND
 
-  const WEBHOOK_URL = process.env?.EXPO_PUBLIC_VITE_WEBHOOK
+  const WEBHOOK_URL = process.env?.EXPO_PUBLIC_WEBHOOK
 
   useEffect(() => {
     if (!loading) return;
