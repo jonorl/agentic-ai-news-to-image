@@ -11,6 +11,16 @@ This system demonstrates advanced workflow automation and AI orchestration by co
 - Generates artistic visual representations automatically
 - Manages state and stores results in a database
 
+## Mobile & API Extension (New)
+
+The system has been expanded with a professional-grade mobile interface and a modern data layer:
+
+    GraphQL API: Efficient, type-safe data fetching layer between the database and mobile client.
+
+    React Native App: A cross-platform mobile application for real-time news-to-art consumption.
+
+    Prisma 7 Integration: Utilizes the latest Prisma features with native PostgreSQL Driver Adapters for high-performance database communication.
+
 ## System Architecture
 
 ### Core Components
