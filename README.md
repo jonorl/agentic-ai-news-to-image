@@ -11,9 +11,11 @@ This system demonstrates advanced workflow automation and AI orchestration by co
 - Generates artistic visual representations automatically
 - Manages state and stores results in a database
 
-## Mobile & API Extension (New)
+## Mobile App & API Extension (New)
 
 The system has been expanded with a professional-grade mobile interface and a modern data layer:
+
+  - New Android app developed using React Native + Expo 54. The apk file can be found under releases.
 
   - GraphQL API: Efficient, type-safe data fetching layer between the database and mobile client.
 
