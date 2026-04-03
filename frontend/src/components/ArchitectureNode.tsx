@@ -151,9 +151,9 @@ export function ArchitectureNodes() {
                       <p className="text-xs text-neutral-500">Flux1 generating image...</p>
                     </div>
                   </div>
-                ) : newsData?.imageUrl ? (
+                ) : newsData?.image_url ? (
                   <img
-                    src={newsData.imageUrl}
+                    src={newsData.image_url}
                     alt={newsData.headline}
                     className="w-full h-full object-cover transition-opacity duration-300"
                     onError={(e) => {
