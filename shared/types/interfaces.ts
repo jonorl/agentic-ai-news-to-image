@@ -1,6 +1,6 @@
 export interface NewsData {
   headline: string;
   description: string;
-  imageUrl: string;
+  image_url: string;
   timestamp?: string;
 }

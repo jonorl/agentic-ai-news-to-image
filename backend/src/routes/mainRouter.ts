@@ -1,8 +1,18 @@
 import { Router, type Request, type Response } from 'express';
 import { db } from '../db/queries.js'
+import { createHandler } from 'graphql-http/lib/use/express';
+import { schema } from '../graphql/schema.js';
+import { newsResolvers } from '../graphql/resolvers/newsResolvers.js';
 
 const mainRouter = Router();
 
+// GraphQL
+mainRouter.use(
+  '/api/v1/graphql',
+  createHandler({ schema, rootValue: newsResolvers })
+);
+
+// REST
 mainRouter.post('/api/v1/news', async (req: Request, res: Response) => {
   try {
     const getActiveNews = await db.getActiveNews();
