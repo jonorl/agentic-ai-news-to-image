@@ -1,5 +1,4 @@
 const { getDefaultConfig } = require("expo/metro-config");
-const { withNativewind } = require("nativewind/metro");
 const path = require('path');
 
 const projectRoot = __dirname;
@@ -13,4 +12,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-module.exports = withNativewind(config);
+config.resolver.sourceExts = [
+  ...config.resolver.sourceExts,
+  'cjs',
+];
+
+module.exports = config;
