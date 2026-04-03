@@ -16,6 +16,6 @@ export async function fetchNews(
   return {
     headline: newsItem.headline,
     description: newsItem.description,
-    imageUrl: newsItem.image_url || newsItem.imageUrl
+    image_url: newsItem.image_url || newsItem.imageUrl
   };
 }
