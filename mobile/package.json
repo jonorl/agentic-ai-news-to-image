@@ -1,6 +1,6 @@
 {
-  "name": "mobile",
-  "version": "1.0.0",
+  "name": "Agentic-ai: News to image",
+  "version": "1.1.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
