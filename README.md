@@ -15,11 +15,11 @@ This system demonstrates advanced workflow automation and AI orchestration by co
 
 The system has been expanded with a professional-grade mobile interface and a modern data layer:
 
-  -GraphQL API: Efficient, type-safe data fetching layer between the database and mobile client.
+  - GraphQL API: Efficient, type-safe data fetching layer between the database and mobile client.
 
-  -React Native App: A cross-platform mobile application for real-time news-to-art consumption.
+  - React Native App: A cross-platform mobile application for real-time news-to-art consumption.
 
-  -Prisma 7 Integration: Utilizes the latest Prisma features with native PostgreSQL Driver Adapters for high-performance database communication.
+  - Prisma 7 Integration: Utilizes the latest Prisma features with native PostgreSQL Driver Adapters for high-performance database communication.
 
 ## System Architecture
 
