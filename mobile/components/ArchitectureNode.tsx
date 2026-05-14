@@ -185,9 +185,9 @@ export function ArchitectureNode() {
                   <ActivityIndicator color="#8b5cf6" size="large" />
                   <Text style={{ fontSize: 11, color: '#525252' }}>Flux1 generating image...</Text>
                 </View>
-              ) : newsData?.imageUrl ? (
+              ) : newsData?.image_url ? (
                 <Image
-                  source={{ uri: newsData.imageUrl }}
+                  source={{ uri: newsData.image_url }}
                   style={{ width: '100%', height: '100%' }}
                   resizeMode="cover"
                 />
