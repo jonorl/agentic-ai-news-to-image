@@ -34,7 +34,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ error: err.message, stack: err.stack });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT_AGENTIC_AI || 3001;
 
 app.listen(PORT, () =>
   console.log(`Listening on port ${PORT}`)
