@@ -22,5 +22,5 @@ RUN npm install --production
 COPY --from=builder /app/dist ./dist
 
 # Run the compiled JS file
-EXPOSE 3000
+EXPOSE 3001
 CMD ["node", "dist/app.js"]
