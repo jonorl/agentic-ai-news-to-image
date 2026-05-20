@@ -1,5 +1,5 @@
 # STAGE 1: The Builder
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 
 # Copy package files from the backend folder
@@ -11,7 +11,7 @@ COPY backend/ .
 RUN npm run build 
 
 # STAGE 2: The Final Runner
-FROM node:20-slim
+FROM node:22-slim
 WORKDIR /app
 
 # Only copy the compiled files and production dependencies
