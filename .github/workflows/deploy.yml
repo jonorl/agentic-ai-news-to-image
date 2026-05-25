@@ -33,9 +33,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./server
+          context: ./ # UPDATE
           push: true
-          tags: ghcr.io/jonorl/agentic-ai:latest
+          tags: ghcr.io/jonorl/agentic-ai:latest # UPDATE
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -45,6 +45,6 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
+          script: | # UPDATE
             docker compose -f ~/my-VPS/projects/docker-compose.yml pull agentic-ai
             docker compose -f ~/my-VPS/projects/docker-compose.yml up -d agentic-ai
