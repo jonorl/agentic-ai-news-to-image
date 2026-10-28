@@ -169,7 +169,7 @@ export function ArchitectureNodes() {
                         🖼️
                       </div>
                       <p className="text-sm text-neutral-500 mb-1">Loading image...</p>
-                      <p className="text-xs text-neutral-600">Via Flux.1 Schnell (or a fallback) + Cloudinary</p>
+                      <p className="text-xs text-neutral-600">Via Flux.1 Schnell on Workers AI (or a fallback)</p>
                     </div>
                   </>
                 )}

@@ -201,7 +201,7 @@ export function ArchitectureNode() {
                     <Text style={{ fontSize: 28 }}>🖼️</Text>
                   </View>
                   <Text style={{ fontSize: 13, color: '#525252' }}>Loading image...</Text>
-                  <Text style={{ fontSize: 11, color: '#404040' }}>Via Flux.1 Schnell (or a fallback) + Cloudinary</Text>
+                  <Text style={{ fontSize: 11, color: '#404040' }}>Via Flux.1 Schnell on Workers AI (or a fallback)</Text>
                 </View>
               )}
             </View>

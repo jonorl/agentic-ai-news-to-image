@@ -22,4 +22,12 @@ export const db = {
   },
 
   ping: () => prisma.$queryRaw`SELECT 1`,
+
+  getImageUrls: async () =>
+    (await prisma.daily_news_art.findMany({ select: { image_url: true } })).map((row) => row.image_url),
+
+  disconnect: async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  },
 };

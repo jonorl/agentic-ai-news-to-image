@@ -1,9 +1,10 @@
 # Cloudflare Pages applies these to every response, and rename-worker passes them through on
-# jonathan-orlowski.dev/agentic-ai-news-to-image/. The stored story and "Run Workflow" both go to
-# api.jonathan-orlowski.dev, and the images are on Cloudinary; a broken image is swapped for a data: SVG. Cloudflare Web
-# Analytics injects its beacon from static.cloudflareinsights.com.
+# jonathan-orlowski.dev/agentic-ai-news-to-image/. The stored story, "Run Workflow" and the images all come from
+# api.jonathan-orlowski.dev. Stories from before October 2026 still point to Cloudinary, so it stays allowed until they
+# have rotated out. A broken image is swapped for a data: SVG. Cloudflare Web Analytics injects its beacon from
+# static.cloudflareinsights.com.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' data: https://res.cloudinary.com; font-src 'self'; connect-src 'self' https://api.jonathan-orlowski.dev https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' data: https://api.jonathan-orlowski.dev https://res.cloudinary.com; font-src 'self'; connect-src 'self' https://api.jonathan-orlowski.dev https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin

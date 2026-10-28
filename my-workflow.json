@@ -1,4 +1,5 @@
 {
+  "name": "Agentic AI News bot",
   "nodes": [
     {
       "parameters": {
@@ -12,47 +13,50 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -80,
-        144
+        -1216,
+        1392
       ],
-      "id": "23ec9b16-9fae-4337-8dfe-29d0b5c9e690",
-      "name": "Daily News bot"
+      "id": "dca49ea7-40d1-4add-9b13-8785df3de5c7",
+      "name": "Daily News bot",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ { \"headline\": $json.headline, \"description\": $json.description, \"imageUrl\": $json.secure_url } }}",
+        "responseBody": "={{ { \"headline\": $json.headline, \"description\": $json.description, \"imageUrl\": $json.image_url } }}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        2272,
-        128
+        256,
+        1440
       ],
-      "id": "cd8d6200-614b-4021-b9d4-c4b76b2e0efe",
+      "id": "09410326-ec0e-48d1-970d-977a22e5c2d9",
       "name": "Respond to Webhook"
     },
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "89edac54-141b-4f2b-b784-bdb4172143fb",
+        "authentication": "headerAuth",
         "responseMode": "responseNode",
-        "options": {},
-        "authentication": "headerAuth"
+        "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -976,
-        144
+        -2112,
+        1376
       ],
-      "id": "3919b51c-cd53-492a-b13a-501f90ac4de8",
+      "id": "08fb251f-bb79-419d-8243-0db68bd947b0",
       "name": "Webhook",
       "webhookId": "89edac54-141b-4f2b-b784-bdb4172143fb",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "",
+          "id": "e4xVL6pjREOX6fHc",
           "name": "Workflow token"
         }
       }
@@ -68,10 +72,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -976,
-        432
+        -2112,
+        1664
       ],
-      "id": "3c83051f-8895-4ed4-a929-029e3ec14b79",
+      "id": "acb7f787-8a86-49ec-bcce-c17cde8e64a9",
       "name": "Schedule Trigger"
     },
     {
@@ -79,16 +83,16 @@
         "operation": "executeQuery",
         "query": "  INSERT INTO daily_news_art (image_url, headline, description) \n  VALUES ($1, $2, $3);",
         "options": {
-          "queryReplacement": "=Value 1: {{ $json.secure_url }}\nValue 2: {{ $json.headline }}\nValue 3: {{ $json.description }}\n"
+          "queryReplacement": "=Value 1: {{ $json.image_url }}\nValue 2: {{ $json.headline }}\nValue 3: {{ $json.description }}\n"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2272,
-        320
+        256,
+        1632
       ],
-      "id": "6a7c0bea-d983-4a07-8ec8-ad445b8ea1ee",
+      "id": "ace8dd73-2c26-466a-ac15-4593cfc0ebb4",
       "name": "Save entry in DB",
       "retryOnFail": true,
       "credentials": {
@@ -108,10 +112,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2496,
-        240
+        480,
+        1472
       ],
-      "id": "3df89d43-2197-4c3b-815d-a0abfd912ccc",
+      "id": "58cfef07-fcce-46a9-8926-cb1da5f7eea8",
       "name": "Delete anything over 7 in DB",
       "retryOnFail": true,
       "executeOnce": true,
@@ -133,10 +137,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -752,
-        144
+        -1888,
+        1376
       ],
-      "id": "fac3ff59-8959-423d-bdc2-c5c765acb104",
+      "id": "2b90407e-3a4c-4b74-b5b4-e0f4d7ead495",
       "name": "BBC and Al-Jazeera news",
       "retryOnFail": true,
       "waitBetweenTries": 3000,
@@ -155,10 +159,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
-        144
+        -1440,
+        1392
       ],
-      "id": "8e5b96f3-5128-43fd-b55c-89a613f9c3bd",
+      "id": "218961bd-4991-414b-9e42-cc2a452724c3",
       "name": "Format input for agent"
     },
     {
@@ -170,10 +174,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2496,
-        624
+        480,
+        1856
       ],
-      "id": "18155203-a78b-4bc2-985f-07e6e9ba8bff",
+      "id": "db832c3a-612c-4127-bc41-dd358c06a6a4",
       "name": "Remove active values",
       "retryOnFail": true,
       "credentials": {
@@ -191,10 +195,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1616,
-        192
+        -192,
+        1440
       ],
-      "id": "9934b119-609b-4ddb-97cf-9b2f1cd323ac",
+      "id": "f950f922-a94e-4659-abaf-cc8af30f2df1",
       "name": "Clean output"
     },
     {
@@ -225,10 +229,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        -752,
-        336
+        -1888,
+        1568
       ],
-      "id": "017d2966-85e8-46a1-8da2-6a50f6efbbb1",
+      "id": "909a97c4-1bfe-4b05-99b0-9b41d1dd90bd",
       "name": "Memory check",
       "alwaysOutputData": true,
       "retryOnFail": true,
@@ -244,10 +248,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -528,
-        144
+        -1664,
+        1392
       ],
-      "id": "e3bd30d8-01d9-47de-9814-d2eedef2b4fb",
+      "id": "14b7b4c7-0f7d-4be4-83d2-472e450ebee8",
       "name": "Merge 1"
     },
     {
@@ -273,10 +277,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        272,
-        144
+        -864,
+        1392
       ],
-      "id": "d58db41d-6759-41af-afdd-416e8586b246",
+      "id": "0b442635-07ea-4d57-a262-8de0b1dd484f",
       "name": "Filter results"
     },
     {
@@ -290,10 +294,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        496,
-        48
+        -640,
+        1296
       ],
-      "id": "504d99f8-f6d0-4e84-bc5f-4da385c1fe28",
+      "id": "a9039368-b35d-4f42-bc61-b304001183de",
       "name": "Add to memory",
       "retryOnFail": true,
       "credentials": {
@@ -303,73 +307,6 @@
         }
       },
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "operation": "uploadFile",
-        "additionalFieldsFile": {
-          "folder": "agentic-ai"
-        }
-      },
-      "type": "n8n-nodes-cloudinary.cloudinary",
-      "typeVersion": 1,
-      "position": [
-        1824,
-        432
-      ],
-      "id": "f6011cc2-fe4f-455b-8c33-1c14ff694850",
-      "name": "Upload to Cloudinary",
-      "retryOnFail": true,
-      "credentials": {
-        "cloudinaryApi": {
-          "id": "ogEGQCVLBPlrO5iZ",
-          "name": "Cloudinary account"
-        }
-      },
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "image/png"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "inputs",
-              "value": "={{ $json.description }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        496,
-        432
-      ],
-      "id": "761e18b6-7a64-47cc-ae3c-6606cc036a65",
-      "name": "Flux1 image gen",
-      "retryOnFail": true,
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "Y69Xl7YCgbrcGUQC",
-          "name": "Bearer Auth account"
-        }
-      },
-      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -383,10 +320,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2048,
-        320
+        32,
+        1552
       ],
-      "id": "b96a926f-3429-4142-b318-7dfe2afcd0c4",
+      "id": "47fb6a3a-62b9-47ec-a71c-99dfb9e65a68",
       "name": "Merge 2"
     },
     {
@@ -398,10 +335,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2496,
-        432
+        480,
+        1664
       ],
-      "id": "c9e9debe-9988-41c6-8952-315de382ef99",
+      "id": "a2537095-0e72-4d92-8da2-6dde138ed7e1",
       "name": "Delete anything over 7 in memory",
       "retryOnFail": true,
       "executeOnce": true,
@@ -424,10 +361,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2720,
-        624
+        704,
+        1856
       ],
-      "id": "f854d798-006c-4f30-878e-f41ed2ffbc59",
+      "id": "cd85fb63-f4ea-4cbf-b3f6-43c2a4d58e51",
       "name": "Make latest entry active",
       "retryOnFail": true,
       "credentials": {
@@ -440,16 +377,16 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.8-flash",
+        "modelName": "models/gemini-flash-latest",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -64,
-        368
+        -1216,
+        1616
       ],
-      "id": "08967c95-9049-4cc1-88f0-91e31ccb6dc6",
+      "id": "525d6f54-a1a2-4f31-b41f-0d79920e6d46",
       "name": "Gemini",
       "credentials": {
         "googlePalmApi": {
@@ -460,16 +397,16 @@
     },
     {
       "parameters": {
-        "model": "llama-3.3-70b-versatile",
+        "model": "openai/gpt-oss-120b",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        64,
-        368
+        -1088,
+        1616
       ],
-      "id": "c8f194ec-1644-4efb-83d3-63f696705d63",
+      "id": "f22470b7-35f1-4653-adb3-51b4dc8c2cc4",
       "name": "Groq (fallback)",
       "credentials": {
         "groqApi": {
@@ -507,10 +444,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2272,
-        624
+        256,
+        1856
       ],
-      "id": "a3fe0820-4c82-49a1-a635-5049f77951ad",
+      "id": "2c124238-5a21-4b62-a4e1-82d968029361",
       "name": "If triggered from webhook"
     },
     {
@@ -521,10 +458,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        1088,
-        768
+        -416,
+        1824
       ],
-      "id": "5c02f5f2-cd1c-4a00-ad42-1394f33ab72b",
+      "id": "25bab672-69fc-4d4e-bb1d-202678357169",
       "name": "Pollinations fallback",
       "retryOnFail": true,
       "onError": "continueRegularOutput"
@@ -532,147 +469,89 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
+        "url": "https://api.cloudflare.com/client/v4/accounts/<your-cloudflare-account-id>/ai/run/@cf/black-forest-labs/flux-1-schnell",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $json.description, steps: 4 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -640,
+        1664
+      ],
+      "id": "f6d3747c-731b-4c7f-ba73-34fd937e06b6",
+      "name": "Cloudflare FLUX image gen",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "0oGXTRzGO8ghf0zf",
+          "name": "Cloudflare Workers AI token"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "result.image",
+        "options": {
+          "fileName": "news.jpg",
+          "mimeType": "image/jpeg"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        1632
+      ],
+      "id": "38a20996-946e-407a-9d2d-17b4fc09b426",
+      "name": "Convert to image"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/home/node/.n8n-files/agentic-ai/{{ $execution.id }}.jpg",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        1664
+      ],
+      "id": "6c05dcf9-def2-42b2-a895-702705e3ddf9",
+      "name": "Save image"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
             {
-              "name": "prompt",
-              "value": "={{ $json.description }}"
-            },
-            {
-              "name": "modelId",
-              "value": "b24e16ff-06e3-43eb-8d33-4416c2d75876"
-            },
-            {
-              "name": "width",
-              "value": "={{ 1024 }}"
-            },
-            {
-              "name": "height",
-              "value": "={{ 768 }}"
-            },
-            {
-              "name": "num_images",
-              "value": "={{ 1 }}"
+              "id": "dbd6f1fc-2c7f-4e61-a2b5-22374c079531",
+              "name": "image_url",
+              "value": "=https://api.jonathan-orlowski.dev/images/{{ $execution.id }}.jpg",
+              "type": "string"
             }
           ]
         },
-        "options": {},
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth"
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        720,
-        528
-      ],
-      "id": "86c4356a-f089-4b88-9650-6184dab726f6",
-      "name": "Leonardo fallback",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "onError": "continueRegularOutput",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "",
-          "name": "Leonardo API key"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        1232,
-        464
-      ],
-      "id": "53227230-e8bf-4cf9-a1e9-eabff52f3ecd",
-      "name": "Wait",
-      "webhookId": "24f310a2-4cae-41b3-b82c-4f90713d5d3c"
-    },
-    {
-      "parameters": {
-        "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.sdGenerationJob.generationId }}",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "json"
-            }
-          }
-        },
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth"
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1376,
-        464
-      ],
-      "id": "9699417f-1002-4989-96bd-2c021faa5681",
-      "name": "Fetch result",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "",
-          "name": "Leonardo API key"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.generations_by_pk.generated_images[0].url }}",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "file"
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1600,
-        464
-      ],
-      "id": "f4ca8aaf-8f1d-45c7-aad8-cc3f9b81eb17",
-      "name": "Return as binary file"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "41894ade-2468-4342-9c4f-910fef2bd66a",
-              "leftValue": "={{$json.sdGenerationJob.generationId}}",
-              "rightValue": "{}",
-              "operator": {
-                "type": "string",
-                "operation": "empty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
         "options": {}
       },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        928,
-        528
+        -80,
+        1808
       ],
-      "id": "95c84305-f92d-4bb9-bee4-eda2022a5e33",
-      "name": "If"
+      "id": "58b9dd3c-fb92-4649-8d35-1a079e493fa1",
+      "name": "Image URL"
     }
   ],
   "connections": {
@@ -810,41 +689,12 @@
             "index": 0
           },
           {
-            "node": "Flux1 image gen",
+            "node": "Clean output",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Clean output",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upload to Cloudinary": {
-      "main": [
-        [
-          {
-            "node": "Merge 2",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Flux1 image gen": {
-      "main": [
-        [
-          {
-            "node": "Upload to Cloudinary",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Leonardo fallback",
+            "node": "Cloudflare FLUX image gen",
             "type": "main",
             "index": 0
           }
@@ -910,63 +760,18 @@
       "main": [
         [
           {
-            "node": "Upload to Cloudinary",
+            "node": "Save image",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Leonardo fallback": {
+    "Cloudflare FLUX image gen": {
       "main": [
         [
           {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Wait": {
-      "main": [
-        [
-          {
-            "node": "Fetch result",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Fetch result": {
-      "main": [
-        [
-          {
-            "node": "Return as binary file",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Return as binary file": {
-      "main": [
-        [
-          {
-            "node": "Upload to Cloudinary",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Wait",
+            "node": "Convert to image",
             "type": "main",
             "index": 0
           }
@@ -979,11 +784,44 @@
           }
         ]
       ]
+    },
+    "Convert to image": {
+      "main": [
+        [
+          {
+            "node": "Save image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save image": {
+      "main": [
+        [
+          {
+            "node": "Image URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image URL": {
+      "main": [
+        [
+          {
+            "node": "Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "643565aac18c6559db5faecfdd92e0cc7acc82151d802ca6b0bcfde44b10019b"
-  }
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "pinData": {}
 }

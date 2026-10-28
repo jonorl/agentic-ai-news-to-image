@@ -3,6 +3,7 @@ import mainRouter from './routes/mainRouter.js';
 import healthRouter from './routes/health.js';
 import workflowRouter from './routes/workflow.js';
 import { corsMiddleware } from './middleware/cors.js';
+import { imagesRouter } from './routes/images.js';
 
 const app: Application = express();
 app.disable('x-powered-by');
@@ -13,6 +14,7 @@ app.use(corsMiddleware());
 app.use(express.json());
 
 app.use('/health', healthRouter);
+app.use('/images', imagesRouter());
 app.use('/api/v1/workflow', workflowRouter);
 app.use("/", mainRouter);
 

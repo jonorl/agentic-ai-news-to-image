@@ -7,7 +7,7 @@ export const LOADING_MESSAGES = [
   "Selecting most relevant story...",
   "Generating 20-word visual prompt...",
   "AI creating artistic representation...",
-  "Uploading to Cloudinary CDN...",
+  "Saving the image...",
   "Saving to PostgreSQL db...",
   "Updating active entry status...",
   "Almost there..."
