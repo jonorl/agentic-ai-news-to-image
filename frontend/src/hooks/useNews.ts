@@ -13,11 +13,10 @@ export function useNews() {
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
   const STATIC_API_URL = import.meta.env.VITE_BACKEND;
-  const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK;
 
   // State is only set in the promise callbacks, so the first load can start from an effect.
   const load = useCallback((mode: 'static' | 'dynamic') =>
-    fetchNews(mode, STATIC_API_URL, WEBHOOK_URL)
+    fetchNews(mode, STATIC_API_URL)
       .then(
         (data) => {
           setNewsData(data);
@@ -27,7 +26,7 @@ export function useNews() {
         (err) => setError(err instanceof Error ? err.message : 'Failed to fetch news'),
       )
       .finally(() => setLoading(false)),
-  [STATIC_API_URL, WEBHOOK_URL]);
+  [STATIC_API_URL]);
 
   const handleFetch = (mode: 'static' | 'dynamic') => {
     setLoading(true);

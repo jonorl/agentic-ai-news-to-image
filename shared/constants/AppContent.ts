@@ -1,35 +1,35 @@
 export const architectureNodes = [
   { title: 'Data Ingestion', description: 'HTTP Request fetches real-time headlines from BBC News and Al Jazeera via NewsAPI', icon: '📡' },
-  { title: 'AI Agent (Dual Model)', description: 'Gemini 2.0 Flash analyzes impact with Groq Llama 3.3 70B fallback for reliability', icon: '🤖' },
+  { title: 'AI Agent (Dual Model)', description: 'Gemini 3.8 Flash picks the headline, with Groq Llama 3.3 70B as a fallback', icon: '🤖' },
   { title: 'Memory System', description: '10-headline buffer with PostgreSQL prevents duplicate selections and tracks history', icon: '🧠' },
-  { title: 'Image Pipeline', description: 'Flux1 Schnell via Hugging Face generates images, uploaded to Cloudinary CDN', icon: '🎨' },
+  { title: 'Image Pipeline', description: 'Flux.1 Schnell on Hugging Face renders the image, with Leonardo as a fallback, then Cloudinary hosts it', icon: '🎨' },
 ];
 
 export const features = [
-  { title: 'Dual AI Architecture', description: 'Primary Gemini 2.0 Flash with Groq Llama 3.3 70B fallback ensures 99.9% uptime and reliability.', icon: '⚡' },
+  { title: 'Dual AI Architecture', description: 'Gemini 3.8 Flash selects the headline; if it fails, Groq Llama 3.3 70B takes over.', icon: '⚡' },
   { title: 'Smart Memory Buffer', description: '10-headline PostgreSQL memory prevents repetitive selections while maintaining context awareness.', icon: '🎯' },
-  { title: 'Production-Grade Pipeline', description: 'Flux1 Schnell via Hugging Face Inference API + Cloudinary CDN delivers high-quality images with global distribution.', icon: '🚀' },
+  { title: 'Production-Grade Pipeline', description: 'Flux.1 Schnell renders through the Hugging Face Inference API, Leonardo steps in if it fails, and Cloudinary serves the result.', icon: '🚀' },
   { title: 'Multi-Source Aggregation', description: 'NewsAPI combines BBC and Al Jazeera for comprehensive, balanced international coverage.', icon: '🌍' },
-  { title: 'Automated State Management', description: 'Database automatically rotates entries, keeping last 7 days while marking active content.', icon: '🔄' },
-  { title: 'Dual Trigger System', description: 'Supports both scheduled cron jobs and webhook triggers for flexible deployment strategies.', icon: '⏰' },
+  { title: 'Automated State Management', description: 'The database keeps the last 7 stories and marks the latest scheduled one as active.', icon: '🔄' },
+  { title: 'Dual Trigger System', description: 'Runs daily on a schedule, and on demand from Run Workflow, which is rate-limited to protect the free API quotas.', icon: '⏰' },
 ];
 
 export const pipelineSteps = [
-  { step: '1', title: 'Trigger', desc: 'Webhook or scheduled cron job initiates workflow' },
+  { step: '1', title: 'Trigger', desc: 'The daily schedule, or Run Workflow on this page' },
   { step: '2', title: 'Data Collection', desc: 'Fetches NewsAPI headlines, merges with 10-headline memory buffer, and formats for AI agent' },
   { step: '3', title: 'AI Selection', desc: 'Gemini evaluates 30 headlines for impact and uniqueness, outputs headline + 20-word description' },
   { step: '4', title: 'Memory Update', desc: 'Adds selected headline to PostgreSQL history' },
-  { step: '5', title: 'Image Generation', desc: 'Flux1 Schnell creates artistic representation via Hugging Face Inference API' },
+  { step: '5', title: 'Image Generation', desc: 'Flux.1 Schnell renders the description via the Hugging Face Inference API, with Leonardo as a fallback' },
   { step: '6', title: 'Cloud Upload', desc: 'Cloudinary stores image and returns CDN URL' },
-  { step: '7', title: 'Database Commit', desc: 'Saves entry with active status, deactivates old entries, keeps last 7 for rotation' },
-  { step: '8', title: 'Response', desc: 'Returns JSON to webhook caller with complete data' },
+  { step: '7', title: 'Database Commit', desc: 'Saves the story and keeps the last 7; a scheduled run becomes the one everyone sees' },
+  { step: '8', title: 'Response', desc: 'Returns the headline, description and image URL to whoever ran it' },
 ];
 
 export const techStack = [
   { name: 'n8n', color: 'from-red-500/20 to-pink-500/20' },
-  { name: 'Gemini 2.0', color: 'from-blue-500/20 to-cyan-500/20' },
+  { name: 'Gemini', color: 'from-blue-500/20 to-cyan-500/20' },
   { name: 'Groq Llama', color: 'from-indigo-500/20 to-purple-500/20' },
-  { name: 'Flux1', color: 'from-purple-500/20 to-violet-500/20' },
+  { name: 'Flux.1', color: 'from-purple-500/20 to-violet-500/20' },
   { name: 'Hugging Face', color: 'from-yellow-500/20 to-orange-500/20' },
   { name: 'Cloudinary', color: 'from-blue-600/20 to-indigo-500/20' },
   { name: 'PostgreSQL', color: 'from-slate-500/20 to-gray-500/20' },

@@ -15,7 +15,7 @@ export function Header() {
 
       <p className="text-lg lg:text-xl text-neutral-400 max-w-3xl leading-relaxed">
         An autonomous AI workflow that monitors global news sources, intelligently selects the most impactful headlines
-        using dual AI models with fallback, and generates high-quality visual representations via Flux1 (or Pollinations as fallback) while maintaining
+        using dual AI models with fallback, and generates high-quality visual representations via Flux.1 Schnell (with Leonardo and Pollinations as fallbacks) while maintaining
         a 10-headline memory buffer to ensure content novelty.
       </p>
     </header>

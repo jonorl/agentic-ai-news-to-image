@@ -4,13 +4,36 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/shodan.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agentic AI portfolio</title>
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>Agentic News-to-Image</title>
+    <meta
+      name="description"
+      content="An n8n AI agent picks the day's most important headline from BBC News and Al Jazeera and turns it into an image with Flux.1. See today's pick or run the workflow live."
+    />
+    <!-- The same build is also served from agentic-ai-news-to-image.pages.dev; this tells search engines which URL counts. -->
+    <link rel="canonical" href="https://jonathan-orlowski.dev/agentic-ai-news-to-image/" />
+
+    <!-- Link previews. Crawlers need absolute URLs. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Agentic News-to-Image" />
+    <meta
+      property="og:description"
+      content="An n8n AI agent picks the day's most important headline and turns it into an image with Flux.1."
+    />
+    <meta property="og:url" content="https://jonathan-orlowski.dev/agentic-ai-news-to-image/" />
+    <meta property="og:image" content="https://jonathan-orlowski.dev/agentic-ai-news-to-image/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The Agentic News-to-Image page: today's headline next to the image generated from it." />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google tag (gtag.js). gtag-init.js is deferred so it does not block rendering; gtag.js reads the queue
+         whenever either script runs first. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EXE9J6FETE"></script>
+    <script defer src="/gtag-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EXE9J6FETE"></script>
-    <script src="/gtag-init.js"></script>
   </body>
 </html>

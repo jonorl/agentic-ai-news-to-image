@@ -1,5 +1,4 @@
 {
-  "name": "Agentic AI News bot",
   "nodes": [
     {
       "parameters": {
@@ -13,10 +12,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        1344,
-        48
+        -80,
+        144
       ],
-      "id": "f49c53e4-6b27-4ef5-a50e-5444b31de32f",
+      "id": "23ec9b16-9fae-4337-8dfe-29d0b5c9e690",
       "name": "Daily News bot"
     },
     {
@@ -28,10 +27,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        3488,
-        32
+        2272,
+        128
       ],
-      "id": "154fd4f7-db74-4e70-8ae0-547df347e773",
+      "id": "cd8d6200-614b-4021-b9d4-c4b76b2e0efe",
       "name": "Respond to Webhook"
     },
     {
@@ -39,17 +38,24 @@
         "httpMethod": "POST",
         "path": "89edac54-141b-4f2b-b784-bdb4172143fb",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {},
+        "authentication": "headerAuth"
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        448,
-        48
+        -976,
+        144
       ],
-      "id": "8d4864cd-676e-4baa-9f85-25f3cbe22edd",
+      "id": "3919b51c-cd53-492a-b13a-501f90ac4de8",
       "name": "Webhook",
-      "webhookId": "89edac54-141b-4f2b-b784-bdb4172143fb"
+      "webhookId": "89edac54-141b-4f2b-b784-bdb4172143fb",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Workflow token"
+        }
+      }
     },
     {
       "parameters": {
@@ -62,10 +68,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        448,
-        336
+        -976,
+        432
       ],
-      "id": "d0bdb978-b0fb-4917-9381-e43d02b7d891",
+      "id": "3c83051f-8895-4ed4-a929-029e3ec14b79",
       "name": "Schedule Trigger"
     },
     {
@@ -79,16 +85,16 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        3488,
-        224
+        2272,
+        320
       ],
-      "id": "46546249-7ac3-4ea9-bace-7cbf200ba8aa",
+      "id": "6a7c0bea-d983-4a07-8ec8-ad445b8ea1ee",
       "name": "Save entry in DB",
       "retryOnFail": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
@@ -102,37 +108,45 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        3712,
-        144
+        2496,
+        240
       ],
-      "id": "b7ba678b-2705-4de5-a460-0444b01e7781",
+      "id": "3df89d43-2197-4c3b-815d-a0abfd912ccc",
       "name": "Delete anything over 7 in DB",
       "retryOnFail": true,
       "executeOnce": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "url": "https://newsapi.org/v2/everything?q=(\"BBC News\" OR \"Al Jazeera\")&language=en&apiKey=47ae280bbd584811a9ea7fcbf44b1aca",
-        "options": {}
+        "url": "https://newsapi.org/v2/everything?q=(\"BBC News\" OR \"Al Jazeera\")&language=en",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        672,
-        48
+        -752,
+        144
       ],
-      "id": "683cb277-32fd-4962-8d74-864210c6a442",
+      "id": "fac3ff59-8959-423d-bdc2-c5c765acb104",
       "name": "BBC and Al-Jazeera news",
       "retryOnFail": true,
       "waitBetweenTries": 3000,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "NewsAPI key"
+        }
+      }
     },
     {
       "parameters": {
@@ -141,10 +155,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1120,
-        48
+        -304,
+        144
       ],
-      "id": "3b096d34-85c2-4af1-b56c-5f42aef96f05",
+      "id": "8e5b96f3-5128-43fd-b55c-89a613f9c3bd",
       "name": "Format input for agent"
     },
     {
@@ -156,16 +170,16 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        3712,
-        528
+        2496,
+        624
       ],
-      "id": "e3a6f686-28a2-425a-9878-3cd3c8a48bc2",
+      "id": "18155203-a78b-4bc2-985f-07e6e9ba8bff",
       "name": "Remove active values",
       "retryOnFail": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
@@ -177,10 +191,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3040,
-        96
+        1616,
+        192
       ],
-      "id": "8de0cb3e-5e2b-41a9-905f-95070ee51288",
+      "id": "9934b119-609b-4ddb-97cf-9b2f1cd323ac",
       "name": "Clean output"
     },
     {
@@ -211,17 +225,17 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        672,
-        240
+        -752,
+        336
       ],
-      "id": "db97fbfb-1c84-4573-bb7a-56bfb5013e5c",
+      "id": "017d2966-85e8-46a1-8da2-6a50f6efbbb1",
       "name": "Memory check",
       "alwaysOutputData": true,
       "retryOnFail": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       }
     },
@@ -230,10 +244,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        896,
-        48
+        -528,
+        144
       ],
-      "id": "747ce45e-abb6-4761-b10e-0071a24a5383",
+      "id": "e3bd30d8-01d9-47de-9814-d2eedef2b4fb",
       "name": "Merge 1"
     },
     {
@@ -259,10 +273,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1696,
-        48
+        272,
+        144
       ],
-      "id": "26beb87e-0ae2-4ca5-873e-1c9387283110",
+      "id": "d58db41d-6759-41af-afdd-416e8586b246",
       "name": "Filter results"
     },
     {
@@ -276,16 +290,16 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1920,
-        -48
+        496,
+        48
       ],
-      "id": "fc1afe51-0e6e-457f-8555-3bd6d65de2eb",
+      "id": "504d99f8-f6d0-4e84-bc5f-4da385c1fe28",
       "name": "Add to memory",
       "retryOnFail": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
@@ -300,15 +314,15 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        3040,
-        336
+        1824,
+        432
       ],
-      "id": "6365c920-89c5-4c28-bb3a-a1d37ff46169",
+      "id": "f6011cc2-fe4f-455b-8c33-1c14ff694850",
       "name": "Upload to Cloudinary",
       "retryOnFail": true,
       "credentials": {
         "cloudinaryApi": {
-          "id": "y95iMwhKl94B0NcM",
+          "id": "ogEGQCVLBPlrO5iZ",
           "name": "Cloudinary account"
         }
       },
@@ -343,15 +357,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        1920,
-        336
+        496,
+        432
       ],
-      "id": "b03f7b18-8653-4df9-8716-96da414d5c29",
+      "id": "761e18b6-7a64-47cc-ae3c-6606cc036a65",
       "name": "Flux1 image gen",
       "retryOnFail": true,
       "credentials": {
         "httpBearerAuth": {
-          "id": "mi6VLDA3O4QbcmaI",
+          "id": "Y69Xl7YCgbrcGUQC",
           "name": "Bearer Auth account"
         }
       },
@@ -369,10 +383,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3264,
-        224
+        2048,
+        320
       ],
-      "id": "bcfbed0a-f29e-4c27-a0ce-3f93a384f343",
+      "id": "b96a926f-3429-4142-b318-7dfe2afcd0c4",
       "name": "Merge 2"
     },
     {
@@ -384,17 +398,17 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        3712,
-        336
+        2496,
+        432
       ],
-      "id": "0fdd9454-97bc-4432-ba1c-3b17e9c277c0",
+      "id": "c9e9debe-9988-41c6-8952-315de382ef99",
       "name": "Delete anything over 7 in memory",
       "retryOnFail": true,
       "executeOnce": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
@@ -410,35 +424,36 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        3936,
-        528
+        2720,
+        624
       ],
-      "id": "45376274-f752-4ead-847e-bd8aaa783f08",
+      "id": "f854d798-006c-4f30-878e-f41ed2ffbc59",
       "name": "Make latest entry active",
       "retryOnFail": true,
       "credentials": {
         "postgres": {
-          "id": "0oN70wS4fjcCaCy0",
-          "name": "Unnamed credential"
+          "id": "hTwRg7OxuRaz0jCR",
+          "name": "Postgres account"
         }
       },
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
+        "modelName": "models/gemini-3.8-flash",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        1360,
-        272
+        -64,
+        368
       ],
-      "id": "918121af-923f-48be-8a7a-ca6464160882",
+      "id": "08967c95-9049-4cc1-88f0-91e31ccb6dc6",
       "name": "Gemini",
       "credentials": {
         "googlePalmApi": {
-          "id": "q8Uipzse5qz57Bcr",
+          "id": "zro5QGzFJXOLvxGg",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -451,14 +466,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        1488,
-        272
+        64,
+        368
       ],
-      "id": "091a18f4-89de-4df1-8940-f58defda0e39",
+      "id": "c8f194ec-1644-4efb-83d3-63f696705d63",
       "name": "Groq (fallback)",
       "credentials": {
         "groqApi": {
-          "id": "K7PhWxndXqoRLaZK",
+          "id": "6WFInfWAGfNholsO",
           "name": "Groq account"
         }
       }
@@ -492,24 +507,24 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        3488,
-        528
+        2272,
+        624
       ],
-      "id": "82fd45de-5baa-4c95-8847-5bbec09a843f",
+      "id": "a3fe0820-4c82-49a1-a635-5049f77951ad",
       "name": "If triggered from webhook"
     },
     {
       "parameters": {
-        "url": "https://image.pollinations.ai/prompt/{{ encodeURIComponent($json.description) }}",
+        "url": "=https://image.pollinations.ai/prompt/{{ encodeURIComponent($('Filter results').item.json.description.replace(/[.!?,;]+$/, '')) }}?seed={{ Math.floor(Math.random() * 1000000) }}&nologo=true",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2816,
-        560
+        1088,
+        768
       ],
-      "id": "d9972a7c-df67-461d-903a-3ad4fd8de883",
+      "id": "5c02f5f2-cd1c-4a00-ad42-1394f33ab72b",
       "name": "Pollinations fallback",
       "retryOnFail": true,
       "onError": "continueRegularOutput"
@@ -518,15 +533,6 @@
       "parameters": {
         "method": "POST",
         "url": "https://cloud.leonardo.ai/api/rest/v1/generations",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer d7469f8f-c326-42cc-b8e2-0eca32fe4eea"
-            }
-          ]
-        },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -552,60 +558,67 @@
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2144,
-        432
+        720,
+        528
       ],
-      "id": "559c3fec-9aab-4db8-8246-1aac8cbf0478",
+      "id": "86c4356a-f089-4b88-9650-6184dab726f6",
       "name": "Leonardo fallback",
       "retryOnFail": true,
       "waitBetweenTries": 5000,
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Leonardo API key"
+        }
+      }
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2368,
-        368
+        1232,
+        464
       ],
-      "id": "bf06f7ec-9eb2-4f17-a0ba-de31d4c1b8f8",
+      "id": "53227230-e8bf-4cf9-a1e9-eabff52f3ecd",
       "name": "Wait",
       "webhookId": "24f310a2-4cae-41b3-b82c-4f90713d5d3c"
     },
     {
       "parameters": {
         "url": "=https://cloud.leonardo.ai/api/rest/v1/generations/{{ $json.sdGenerationJob.generationId }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer d7469f8f-c326-42cc-b8e2-0eca32fe4eea"
-            }
-          ]
-        },
         "options": {
           "response": {
             "response": {
               "responseFormat": "json"
             }
           }
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2592,
-        368
+        1376,
+        464
       ],
-      "id": "9ff744d6-6f1f-4ecb-80f3-a9c4ead7475c",
-      "name": "Fetch result"
+      "id": "9699417f-1002-4989-96bd-2c021faa5681",
+      "name": "Fetch result",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Leonardo API key"
+        }
+      }
     },
     {
       "parameters": {
@@ -621,14 +634,47 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        2816,
-        368
+        1600,
+        464
       ],
-      "id": "e68a1138-5550-4e22-97e5-985a14128210",
+      "id": "f4ca8aaf-8f1d-45c7-aad8-cc3f9b81eb17",
       "name": "Return as binary file"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "41894ade-2468-4342-9c4f-910fef2bd66a",
+              "leftValue": "={{$json.sdGenerationJob.generationId}}",
+              "rightValue": "{}",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        928,
+        528
+      ],
+      "id": "95c84305-f92d-4bb9-bee4-eda2022a5e33",
+      "name": "If"
     }
   ],
-  "pinData": {},
   "connections": {
     "Daily News bot": {
       "main": [
@@ -722,11 +768,6 @@
         ]
       ]
     },
-    "Respond to Webhook": {
-      "main": [
-        []
-      ]
-    },
     "Clean output": {
       "main": [
         [
@@ -779,11 +820,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Add to memory": {
-      "main": [
-        []
       ]
     },
     "Upload to Cloudinary": {
@@ -885,18 +921,12 @@
       "main": [
         [
           {
-            "node": "Wait",
+            "node": "If",
             "type": "main",
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Pollinations fallback",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Wait": {
@@ -931,22 +961,29 @@
           }
         ]
       ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pollinations fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false,
-    "timeSavedMode": "fixed",
-    "timezone": "Africa/Kampala",
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "versionId": "6a4e6fdf-4c20-41c5-a446-27bb940d3743",
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "91b510c3e87df8b6f7db922b788007f7985a59218ccf7435ae053184aedbc847"
-  },
-  "id": "uopLzDtsH0Cu4dsU8aKdt",
-  "tags": []
+    "instanceId": "643565aac18c6559db5faecfdd92e0cc7acc82151d802ca6b0bcfde44b10019b"
+  }
 }

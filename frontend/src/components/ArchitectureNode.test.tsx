@@ -15,7 +15,6 @@ const stored = {
 
 beforeEach(() => {
   process.env.VITE_BACKEND = "https://api.test/api/v1/news";
-  process.env.VITE_WEBHOOK = "https://n8n.test/webhook/abc";
   installFetch();
 });
 
@@ -29,7 +28,7 @@ describe("ArchitectureNodes live demo", () => {
     expect(mockFetch).toHaveBeenCalledWith("https://api.test/api/v1/news", expect.anything());
   });
 
-  it("runs the workflow through the webhook on request", async () => {
+  it("runs the workflow through the API on request", async () => {
     const user = userEvent.setup();
     mockFetch.mockReturnValueOnce(reply({ getActiveNews: stored }));
     render(<ArchitectureNodes />);
@@ -40,7 +39,7 @@ describe("ArchitectureNodes live demo", () => {
     await user.click(screen.getByRole("button", { name: "Run Workflow" }));
 
     expect(await screen.findByRole("img", { name: "Fresh headline" })).toBeInTheDocument();
-    expect(mockFetch).toHaveBeenLastCalledWith("https://n8n.test/webhook/abc", expect.anything());
+    expect(mockFetch).toHaveBeenLastCalledWith("https://api.test/api/v1/workflow", expect.anything());
     expect(screen.getByText("Live workflow execution in progress")).toBeInTheDocument();
   });
 

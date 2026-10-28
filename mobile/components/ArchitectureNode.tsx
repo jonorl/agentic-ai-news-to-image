@@ -183,7 +183,7 @@ export function ArchitectureNode() {
               {loading ? (
                 <View style={{ alignItems: 'center', gap: 10 }}>
                   <ActivityIndicator color="#8b5cf6" size="large" />
-                  <Text style={{ fontSize: 11, color: '#525252' }}>Flux1 generating image...</Text>
+                  <Text style={{ fontSize: 11, color: '#525252' }}>Flux.1 generating image...</Text>
                 </View>
               ) : newsData?.image_url ? (
                 <Image
@@ -201,7 +201,7 @@ export function ArchitectureNode() {
                     <Text style={{ fontSize: 28 }}>🖼️</Text>
                   </View>
                   <Text style={{ fontSize: 13, color: '#525252' }}>Loading image...</Text>
-                  <Text style={{ fontSize: 11, color: '#404040' }}>Via Flux1 Schnell (or fallback) + Cloudinary</Text>
+                  <Text style={{ fontSize: 11, color: '#404040' }}>Via Flux.1 Schnell (or a fallback) + Cloudinary</Text>
                 </View>
               )}
             </View>

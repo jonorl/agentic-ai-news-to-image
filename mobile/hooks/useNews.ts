@@ -13,7 +13,6 @@ export function useNews() {
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
   const STATIC_API_URL = process.env?.EXPO_PUBLIC_BACKEND;
-  const WEBHOOK_URL = process.env?.EXPO_PUBLIC_WEBHOOK;
   const GRAPHQL_URL = process.env?.EXPO_PUBLIC_GRAPHQL;
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export function useNews() {
       if (mode === 'graphql') {
         data = await fetchNewsGql(GRAPHQL_URL!);
       } else {
-        data = await fetchNews(mode, STATIC_API_URL!, WEBHOOK_URL!);
+        data = await fetchNews(mode, STATIC_API_URL!);
       }
       setNewsData(data);
       setLastUpdated(new Date().toLocaleString());

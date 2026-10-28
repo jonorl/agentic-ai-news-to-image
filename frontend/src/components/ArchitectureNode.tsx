@@ -25,7 +25,7 @@ export function ArchitectureNodes() {
         </div>
 
         {/* Live Demo Controls */}
-        <section className="mb-20">
+        <section className="mt-20">
           <h2 className="text-3xl font-bold mb-10">Live Demo</h2>
 
           {/* Control Panel */}
@@ -148,7 +148,7 @@ export function ArchitectureNodes() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <div className="w-12 h-12 mx-auto mb-3 border-4 border-neutral-700 border-t-violet-500 rounded-full animate-spin" />
-                      <p className="text-xs text-neutral-500">Flux1 generating image...</p>
+                      <p className="text-xs text-neutral-500">Flux.1 generating image...</p>
                     </div>
                   </div>
                 ) : newsData?.image_url ? (
@@ -169,7 +169,7 @@ export function ArchitectureNodes() {
                         🖼️
                       </div>
                       <p className="text-sm text-neutral-500 mb-1">Loading image...</p>
-                      <p className="text-xs text-neutral-600">Via Flux1 Schnell (or fallback) + Cloudinary</p>
+                      <p className="text-xs text-neutral-600">Via Flux.1 Schnell (or a fallback) + Cloudinary</p>
                     </div>
                   </>
                 )}
