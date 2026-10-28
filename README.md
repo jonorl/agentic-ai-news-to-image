@@ -4,6 +4,7 @@
 [![Build and Deploy](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml)
 [![CodeQL](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/security/code-scanning)
 [![API status](https://img.shields.io/website?url=https%3A%2F%2Fapi.jonathan-orlowski.dev%2Fhealth&label=api&up_message=healthy&down_message=down)](https://api.jonathan-orlowski.dev/health)
+[![Licence](https://img.shields.io/github/license/jonorl/agentic-ai-news-to-image)](LICENSE)
 
 An n8n agent that reads the day's news, picks the headline that matters most, and turns it into an image. An LLM chooses one headline from BBC News and Al Jazeera, avoiding anything too close to its last ten picks, and writes a short visual description that Flux.1 Schnell renders. The result is published to a web page and an Android app. Try it at **https://jonathan-orlowski.dev/agentic-ai-news-to-image/**.
 
@@ -179,4 +180,4 @@ n8n for the workflow engine, Black Forest Labs for Flux.1, Hugging Face for host
 
 ## Contact
 
-Developed by [Jonathan Orlowski](https://jonathan-orlowski.dev/).
+Developed by [Jonathan Orlowski](https://jonathan-orlowski.dev/). Licensed under the Apache License 2.0, see [`LICENSE`](LICENSE).
