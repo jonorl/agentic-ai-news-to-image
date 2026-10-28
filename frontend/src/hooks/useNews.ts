@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchNews } from '../../../shared/hooks/useNewsCore';
 import { LOADING_MESSAGES } from '../../../shared/constants/messages';
 import type { NewsData } from '../../../shared/types/interfaces';
 
 export function useNews() {
   const [newsData, setNewsData] = useState<NewsData | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true because the stored story is fetched on mount.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isStaticMode, setIsStaticMode] = useState(true);
@@ -13,6 +14,27 @@ export function useNews() {
 
   const STATIC_API_URL = import.meta.env.VITE_BACKEND;
   const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK;
+
+  // State is only set in the promise callbacks, so the first load can start from an effect.
+  const load = useCallback((mode: 'static' | 'dynamic') =>
+    fetchNews(mode, STATIC_API_URL, WEBHOOK_URL)
+      .then(
+        (data) => {
+          setNewsData(data);
+          setLastUpdated(new Date().toLocaleString());
+          setIsStaticMode(mode === 'static');
+        },
+        (err) => setError(err instanceof Error ? err.message : 'Failed to fetch news'),
+      )
+      .finally(() => setLoading(false)),
+  [STATIC_API_URL, WEBHOOK_URL]);
+
+  const handleFetch = (mode: 'static' | 'dynamic') => {
+    setLoading(true);
+    setError(null);
+    setLoadingMessage(LOADING_MESSAGES[0]);
+    return load(mode);
+  };
 
   useEffect(() => {
     if (!loading) return;
@@ -25,24 +47,8 @@ export function useNews() {
   }, [loading]);
 
   useEffect(() => {
-    handleFetch('static');
-  }, []);
-
-  const handleFetch = async (mode: 'static' | 'dynamic') => {
-    setLoading(true);
-    setError(null);
-    setLoadingMessage(LOADING_MESSAGES[0]);
-    try {
-      const data = await fetchNews(mode, STATIC_API_URL, WEBHOOK_URL);
-      setNewsData(data);
-      setLastUpdated(new Date().toLocaleString());
-      setIsStaticMode(mode === 'static');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch news');
-    } finally {
-      setLoading(false);
-    }
-  };
+    load('static');
+  }, [load]);
 
   return {
     newsData,

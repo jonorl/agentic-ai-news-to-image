@@ -22,6 +22,12 @@ updates:
       # Jest 30's own Babel preset still requires Babel 7.
       - dependency-name: "@babel/*"
         update-types: ["version-update:semver-major"]
+      # graphql-http's peer range stops at graphql 16; lift this once it supports 17.
+      - dependency-name: graphql
+        update-types: ["version-update:semver-major"]
+      # Kept on the same TypeScript as the frontend, which typescript-eslint holds below 6.1.
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
     open-pull-requests-limit: 5
 
   - package-ecosystem: npm
