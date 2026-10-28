@@ -2,17 +2,28 @@
 
 [![Test](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/test.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/test.yml)
 [![Build and Deploy](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml)
+[![Build APK](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/build-apk.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/build-apk.yml)
 [![CodeQL](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/security/code-scanning)
 [![API status](https://img.shields.io/website?url=https%3A%2F%2Fapi.jonathan-orlowski.dev%2Fhealth&label=api&up_message=healthy&down_message=down)](https://api.jonathan-orlowski.dev/health)
 [![Licence](https://img.shields.io/github/license/jonorl/agentic-ai-news-to-image)](LICENSE)
 
-An n8n agent that reads the day's news, picks the headline that matters most, and turns it into an image. An LLM chooses one headline from BBC News and Al Jazeera, avoiding anything too close to its last ten picks, and writes a short visual description that Flux.1 Schnell renders. The result is published to a web page and an Android app. Try it at **https://jonathan-orlowski.dev/agentic-ai-news-to-image/**.
+An n8n agent that reads the day's news, picks the headline that matters most, and turns it into an image. An LLM chooses one headline from BBC News and Al Jazeera, avoiding anything too close to its last ten picks, and writes a short visual description that Flux.1 Schnell renders. The result is published to a web page and an Android app. Try it at **https://jonathan-orlowski.dev/agentic-ai-news-to-image/**, or install the app from the [latest release](https://github.com/jonorl/agentic-ai-news-to-image/releases/latest).
 
 <p align="center">
   <a href="https://jonathan-orlowski.dev/agentic-ai-news-to-image/">
     <img src="docs/preview.gif" alt="Scrolling through the page: the architecture, today's headline and its generated image, a refresh of the stored story, the n8n pipeline and the key features." width="600" />
   </a>
 </p>
+
+## Android app
+
+1. Download `agentic-news-<version>.apk` from the [latest release](https://github.com/jonorl/agentic-ai-news-to-image/releases/latest) on your phone.
+2. Open it. Android asks you to allow installs from that source the first time; it is under **Settings → Security → Install unknown apps**.
+3. Open **Agentic News** from the app drawer.
+
+It needs an ARM phone, which is virtually every Android phone. Later releases install over it.
+
+If you installed a release from before 2.0.0, it shows up as **Agentic-ai: News to image** and stays separate, because the app's ID changed in 2.0.0. Uninstall it.
 
 ## Architecture
 
@@ -141,7 +152,8 @@ n8n writes each image to a folder on the VPS that is mounted into both container
 │       ├── _headers        # Cloudflare Pages security headers (CSP)
 │       ├── gtag-init.js    # Google Analytics bootstrap
 │       └── og-image.jpg    # Link preview image
-├── mobile/                 # Android app (React Native, Expo 58); the APK is under Releases
+├── mobile/                 # Android app (React Native 0.88, Expo 58); the APK is under Releases
+│   └── plugins/            # Expo config plugin that adds release signing
 ├── shared/                 # Types, copy and fetch logic used by both apps
 ├── docs/                   # README media
 ├── my-workflow.json        # n8n workflow export, with keys moved to credentials
@@ -163,23 +175,32 @@ npm run dev                 # http://localhost:3001
 cd frontend
 npm ci
 npm run dev
+
+# Android app: reads EXPO_PUBLIC_BACKEND from mobile/.env; needs the Android SDK and JDK 17 for a device build
+cd mobile
+npm ci
+npx expo prebuild --platform android
+cd android && ./gradlew assembleRelease -PreactNativeArchitectures=x86_64   # arm64-v8a for a phone
 ```
+
+The generated `mobile/android/` folder is not committed; `app.json` is the source of truth for the native configuration.
 
 To run the workflow yourself, import `my-workflow.json` into n8n and replace `<your-cloudflare-account-id>` in the "Cloudflare FLUX image gen" node, and add credentials for Gemini, Groq and Postgres, a Bearer Auth credential `Cloudflare Workers AI token` (an API token with the Workers AI permission), and two Header Auth credentials: `NewsAPI key` (header `X-Api-Key`) and `Workflow token` (header `X-Workflow-Token`, the same value as the API's `N8N_WEBHOOK_TOKEN`).
 
 ## Testing
 
-Both apps use Jest.
+The API and the web app use Jest.
 
 ```bash
 cd backend && npm run typecheck && npm test
 cd frontend && npm run typecheck && npm run lint && npm test
+cd mobile && npm run typecheck && npx expo-doctor
 ```
 
 - **API:** the REST and GraphQL responses each app depends on, the workflow proxy and both of its rate limits, the `/health` statuses and cache, and which origins CORS allows.
 - **Web app:** loading the stored story, running the workflow, and showing the API's error (such as the rate limit) when a request fails, with `fetch` stubbed.
 
-The `Test` workflow runs both on every push and pull request, and `Build and Deploy` runs it again before shipping.
+The `Test` workflow runs all three on every push and pull request (`expo-doctor` catches a dependency that no longer matches the Expo SDK, which would otherwise only show up as a crash on a phone), and `Build and Deploy` runs it again before shipping.
 
 ## Security and maintenance
 
@@ -189,6 +210,30 @@ The `Test` workflow runs both on every push and pull request, and `Build and Dep
 - **Branch protection:** `main` takes changes through pull requests, which need the `backend` and `frontend` checks to pass and no high-severity CodeQL alerts.
 - **CodeQL** scans the TypeScript and the workflows.
 - **Dependabot** opens weekly grouped updates for the API, the web app and the Docker base image, and monthly ones for GitHub Actions. The Expo app gets security updates only, since Expo pins its packages to the SDK.
+
+## Releasing the Android app
+
+1. Bump `version` (shown to people) and `android.versionCode` (one more than the last release; Android refuses to install a lower one over a higher one) in `mobile/app.json`.
+2. Push to `main`, then push a matching tag:
+   ```bash
+   git tag v2.1.0 && git push origin v2.1.0
+   ```
+3. The `Build APK` workflow checks that the tag matches `app.json`, builds the APK, signs it and publishes a GitHub release with `agentic-news-<version>.apk` attached.
+
+Running `Build APK` by hand from the Actions tab builds the same signed APK and keeps it as a workflow artifact for 14 days instead of releasing it.
+
+### Signing
+
+Every APK is signed with one release key, so each release installs over the last. The key is not in the repository: the workflow reads it from four repository secrets, and [`mobile/plugins/withReleaseSigning.js`](mobile/plugins/withReleaseSigning.js) adds it to the generated Gradle project. Without them, a local release build falls back to the debug key, which installs on an emulator but not over a real release.
+
+| Secret                      | Holds                                   |
+| --------------------------- | --------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`   | The keystore file, base64-encoded       |
+| `ANDROID_KEYSTORE_PASSWORD` | The keystore's password                 |
+| `ANDROID_KEY_ALIAS`         | The key's alias in it (`agentic-news`)  |
+| `ANDROID_KEY_PASSWORD`      | The key's password                      |
+
+If the key is lost, later APKs cannot install over the ones already out there, and everyone would have to uninstall and reinstall. Keep a backup of it outside GitHub.
 
 ## Limitations
 

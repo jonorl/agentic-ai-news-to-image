@@ -70,3 +70,30 @@ jobs:
 
       - name: Test
         run: npm test
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      # Catches a dependency that no longer matches the Expo SDK, which only shows up as a native crash on a phone.
+      - name: Expo doctor
+        run: npx expo-doctor

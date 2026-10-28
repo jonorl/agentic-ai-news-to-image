@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Agentic-ai: News to image",
+    "name": "Agentic News",
     "slug": "mobile",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.mobile"
+      "bundleIdentifier": "dev.jonathanorlowski.agenticnews"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,10 +16,8 @@
         "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mobile"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "package": "dev.jonathanorlowski.agenticnews",
+      "versionCode": 1
     },
     "plugins": [
       "expo-web-browser",
@@ -32,7 +30,11 @@
           "backgroundColor": "#000000",
           "imageWidth": 200
         }
-      ]
+      ],
+      "./plugins/withReleaseSigning"
+    ],
+    "platforms": [
+      "android"
     ]
   }
 }

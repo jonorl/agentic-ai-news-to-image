@@ -1,0 +1,102 @@
+name: Build APK
+
+# Not on every push: the native build takes several minutes. Run it by hand (Actions → Build APK → Run workflow) to
+# get a test APK, or push a version tag (v2.0.0) to publish a release with the APK attached.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    permissions:
+      # Only used to create the release on a tag push.
+      contents: write
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      # Expo inlines EXPO_PUBLIC_* variables into the bundle at build time; mobile/.env is not committed.
+      EXPO_PUBLIC_BACKEND: https://api.jonathan-orlowski.dev/api/v1/news
+
+    steps:
+      # The whole repository, because the app imports from ../shared.
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A release named after a tag that does not match the app's version would ship an APK reporting the wrong one.
+      - name: Check the tag matches app.json
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(jq -r .expo.version app.json)
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match app.json version ${version}"
+            exit 1
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Keeps Gradle's downloads and build cache between runs, which saves most of the native compile.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install
+        run: npm ci
+
+      - name: Generate the native project
+        run: npx expo prebuild --platform android --no-install
+
+      # Every APK, test or release, is signed with the release key, so a test build installs over a released one and
+      # back. plugins/withReleaseSigning.js reads these variables. Only the ARM builds are included: virtually every Android
+      # phone is ARM, and the x86 ones would double the download for emulators only.
+      - name: Build
+        working-directory: mobile/android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::The ANDROID_KEYSTORE_* secrets are not set, so the APK would be signed with the debug key"
+            exit 1
+          fi
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$ANDROID_KEYSTORE_PATH"
+          ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon
+          rm "$ANDROID_KEYSTORE_PATH"
+
+      - name: Name the APK
+        run: |
+          version=$(jq -r .expo.version app.json)
+          mv android/app/build/outputs/apk/release/app-release.apk "agentic-news-${version}.apk"
+          echo "APK=mobile/agentic-news-${version}.apk" >> "$GITHUB_ENV"
+
+      - name: Upload APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: agentic-news-apk
+          path: ${{ env.APK }}
+          retention-days: 14
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "../$APK" --title "Agentic News ${GITHUB_REF_NAME}" --generate-notes
