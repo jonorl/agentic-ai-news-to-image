@@ -45,7 +45,7 @@ flowchart LR
 
     neon[("Neon PostgreSQL<br/>stories, 10-headline memory")]
     news["NewsAPI<br/>BBC, Al Jazeera"]
-    llm["Gemini 3.8 Flash<br/>GPT-OSS 120B on Groq as fallback"]
+    llm["Gemini Flash<br/>GPT-OSS 120B on Groq as fallback"]
     img["Flux.1 Schnell on Cloudflare Workers AI<br/>Pollinations fallback"]
     gha["GitHub Actions<br/>test, build, deploy, smoke test"]
 

@@ -1,6 +1,6 @@
 {
-  "name": "Agentic-ai: News to image",
-  "version": "1.1.0",
+  "name": "agentic-news-mobile",
+  "private": true,
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -37,6 +37,5 @@
     "@expo/cli": {
       "zod": "^4.6.6"
     }
-  },
-  "private": true
+  }
 }

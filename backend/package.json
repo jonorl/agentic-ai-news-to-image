@@ -1,8 +1,8 @@
 {
-  "name": "backend",
+  "name": "agentic-ai-backend",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "app.ts",
+  "type": "module",
   "scripts": {
     "build": "prisma generate && tsc",
     "start": "node dist/app.js",
@@ -12,10 +12,6 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",

@@ -1,12 +1,12 @@
 export const architectureNodes = [
   { title: 'Data Ingestion', description: 'HTTP Request fetches real-time headlines from BBC News and Al Jazeera via NewsAPI', icon: '📡' },
-  { title: 'AI Agent (Dual Model)', description: 'Gemini 3.8 Flash picks the headline, with GPT-OSS 120B on Groq as a fallback', icon: '🤖' },
+  { title: 'AI Agent (Dual Model)', description: 'Gemini Flash picks the headline, with GPT-OSS 120B on Groq as a fallback', icon: '🤖' },
   { title: 'Memory System', description: '10-headline buffer with PostgreSQL prevents duplicate selections and tracks history', icon: '🧠' },
   { title: 'Image Pipeline', description: 'Flux.1 Schnell on Cloudflare Workers AI renders the image, with Pollinations as a fallback, then the VPS stores and serves it', icon: '🎨' },
 ];
 
 export const features = [
-  { title: 'Dual AI Architecture', description: 'Gemini 3.8 Flash selects the headline; if it fails, GPT-OSS 120B on Groq takes over.', icon: '⚡' },
+  { title: 'Dual AI Architecture', description: 'Gemini Flash selects the headline; if it fails, GPT-OSS 120B on Groq takes over.', icon: '⚡' },
   { title: 'Smart Memory Buffer', description: '10-headline PostgreSQL memory prevents repetitive selections while maintaining context awareness.', icon: '🎯' },
   { title: 'Production-Grade Pipeline', description: 'Flux.1 Schnell renders on Cloudflare Workers AI, Pollinations steps in if it fails, and the API serves the result from the VPS.', icon: '🚀' },
   { title: 'Multi-Source Aggregation', description: 'NewsAPI combines BBC and Al Jazeera for comprehensive, balanced international coverage.', icon: '🌍' },
