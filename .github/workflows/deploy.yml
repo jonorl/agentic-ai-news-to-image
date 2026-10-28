@@ -81,11 +81,11 @@ jobs:
           done
 
           curl -fsS --max-time 10 -X POST "$BASE/api/v1/news" | jq -e '.getActiveNews.image_url | type == "string"' > /dev/null \
-            || { echo "::error::POST /api/v1/news did not return the active story, which the web app reads"; exit 1; }
+            || { echo "::error::POST /api/v1/news did not return the active story, which both apps read"; exit 1; }
 
           curl -fsS --max-time 10 -H 'Content-Type: application/json' \
             -d '{"query":"{ activeNews { id headline description image_url } }"}' "$BASE/api/v1/graphql" \
             | jq -e '.data.activeNews.headline | type == "string"' > /dev/null \
-            || { echo "::error::GraphQL activeNews did not return the active story, which the mobile app reads"; exit 1; }
+            || { echo "::error::GraphQL activeNews did not return the active story"; exit 1; }
 
           echo "Smoke test passed"

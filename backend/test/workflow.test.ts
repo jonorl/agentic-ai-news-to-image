@@ -17,7 +17,7 @@ const freshApp = () => {
 const run = (app: ReturnType<typeof freshApp>, ip = '203.0.113.7') =>
   request(app).post('/api/v1/workflow').set('CF-Connecting-IP', ip);
 
-const story = { headline: 'Fresh headline', description: 'Fresh scene', imageUrl: 'https://res.cloudinary.com/demo/new.png' };
+const story = { headline: 'Fresh headline', description: 'Fresh scene', imageUrl: 'https://api.jonathan-orlowski.dev/images/813.jpg' };
 const n8nReply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
 beforeEach(() => {

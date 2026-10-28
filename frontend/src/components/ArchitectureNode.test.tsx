@@ -10,7 +10,7 @@ declare const process: { env: Record<string, string | undefined> };
 const stored = {
   headline: "Glaciers retreat faster than forecast",
   description: "A blue ice wall cracking into a grey sea under low clouds",
-  image_url: "https://res.cloudinary.com/demo/image/upload/glacier.png",
+  image_url: "https://api.jonathan-orlowski.dev/images/812.jpg",
 };
 
 beforeEach(() => {
@@ -34,7 +34,7 @@ describe("ArchitectureNodes live demo", () => {
     render(<ArchitectureNodes />);
     await screen.findByRole("img", { name: stored.headline });
 
-    const fresh = { headline: "Fresh headline", description: "Fresh scene", image_url: "https://res.cloudinary.com/demo/new.png" };
+    const fresh = { headline: "Fresh headline", description: "Fresh scene", image_url: "https://api.jonathan-orlowski.dev/images/813.jpg" };
     mockFetch.mockReturnValueOnce(reply(fresh));
     await user.click(screen.getByRole("button", { name: "Run Workflow" }));
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { fetchNews } from '../../shared/hooks/useNewsCore';
-import { fetchNewsGql } from '../graphql/fetchNewsGql';
 import { LOADING_MESSAGES } from '../../shared/constants/messages';
 import type { NewsData } from '../../shared/types/interfaces';
 
@@ -13,7 +12,6 @@ export function useNews() {
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
   const STATIC_API_URL = process.env?.EXPO_PUBLIC_BACKEND;
-  const GRAPHQL_URL = process.env?.EXPO_PUBLIC_GRAPHQL;
 
   useEffect(() => {
     if (!loading) return;
@@ -29,17 +27,12 @@ export function useNews() {
     handleFetch('static');
   }, []);
 
-  const handleFetch = async (mode: 'static' | 'dynamic' | 'graphql') => {
+  const handleFetch = async (mode: 'static' | 'dynamic') => {
     setLoading(true);
     setError(null);
     setLoadingMessage(LOADING_MESSAGES[0]);
     try {
-      let data: NewsData;
-      if (mode === 'graphql') {
-        data = await fetchNewsGql(GRAPHQL_URL!);
-      } else {
-        data = await fetchNews(mode, STATIC_API_URL!);
-      }
+      const data = await fetchNews(mode, STATIC_API_URL!);
       setNewsData(data);
       setLastUpdated(new Date().toLocaleString());
       setIsStaticMode(mode === 'static');
@@ -58,7 +51,6 @@ export function useNews() {
     loadingMessage,
     isStaticMode,
     fetchStatic: () => handleFetch('static'),
-    fetchDynamic: () => handleFetch('dynamic'),
-    fetchGraphQL: () => handleFetch('graphql')
+    fetchDynamic: () => handleFetch('dynamic')
   };
 }

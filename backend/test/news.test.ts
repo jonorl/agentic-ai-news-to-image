@@ -13,7 +13,7 @@ const story = {
   id: 7,
   headline: 'Glaciers retreat faster than forecast',
   description: 'A blue ice wall cracking into a grey sea under low clouds',
-  image_url: 'https://res.cloudinary.com/demo/image/upload/glacier.png',
+  image_url: 'https://api.jonathan-orlowski.dev/images/812.jpg',
 };
 
 beforeEach(() => {

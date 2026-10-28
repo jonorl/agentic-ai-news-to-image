@@ -17,7 +17,7 @@ export const features = [
 export const pipelineSteps = [
   { step: '1', title: 'Trigger', desc: 'The daily schedule, or Run Workflow on this page' },
   { step: '2', title: 'Data Collection', desc: 'Fetches NewsAPI headlines, merges with 10-headline memory buffer, and formats for AI agent' },
-  { step: '3', title: 'AI Selection', desc: 'Gemini evaluates 30 headlines for impact and uniqueness, outputs headline + 20-word description' },
+  { step: '3', title: 'AI Selection', desc: 'The agent (Gemini, or GPT-OSS on Groq) weighs up to 30 headlines for impact and novelty, and outputs one with a 20-word visual description' },
   { step: '4', title: 'Memory Update', desc: 'Adds selected headline to PostgreSQL history' },
   { step: '5', title: 'Image Generation', desc: 'Flux.1 Schnell renders the description on Cloudflare Workers AI, with Pollinations as a fallback' },
   { step: '6', title: 'Image Storage', desc: 'Saves the image on the VPS, where the API serves it; a weekly job clears out old ones' },
@@ -31,7 +31,7 @@ export const techStack = [
   { name: 'Groq', color: 'from-indigo-500/20 to-purple-500/20' },
   { name: 'Flux.1', color: 'from-purple-500/20 to-violet-500/20' },
   { name: 'Workers AI', color: 'from-yellow-500/20 to-orange-500/20' },
-  { name: 'Cloudflare', color: 'from-blue-600/20 to-indigo-500/20' },
+  { name: 'Expo', color: 'from-blue-600/20 to-indigo-500/20' },
   { name: 'PostgreSQL', color: 'from-slate-500/20 to-gray-500/20' },
   { name: 'NewsAPI', color: 'from-orange-500/20 to-red-500/20' },
   { name: 'Docker', color: 'from-red-600/20 to-orange-500/20' },

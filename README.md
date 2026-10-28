@@ -40,7 +40,7 @@ flowchart LR
 
     visitors --> web
     web -- "stored story (REST)" --> caddy
-    android -- "stored story (GraphQL)" --> caddy
+    android -- "stored story (REST)" --> caddy
     web -- "Run Workflow" --> caddy
     caddy --> api
     api -- "webhook with token" --> n8n
@@ -112,8 +112,8 @@ Served at `https://api.jonathan-orlowski.dev`.
 
 | Endpoint | Used by | Returns |
 | --- | --- | --- |
-| `POST /api/v1/news` | Web app | `{ "getActiveNews": { id, headline, description, image_url } }` |
-| `POST /api/v1/graphql` | Android app | `activeNews { id headline description image_url }` |
+| `POST /api/v1/news` | Web and Android apps | `{ "getActiveNews": { id, headline, description, image_url } }` |
+| `POST /api/v1/graphql` | Not used by either app yet | `activeNews { id headline description image_url }` |
 | `POST /api/v1/workflow` | Web and Android "Run Workflow" | The new story, after a live run (30–60 s). 429 past 3 runs per visitor per hour or 20 a day in total |
 | `GET /health` | Deploy smoke test, status badge | `{ "status", "database", "version" }`, with 503 if Postgres is unreachable |
 
