@@ -1,110 +1,76 @@
-# Agentic News Intelligence System
+# Agentic News-to-Image
 
-An autonomous AI workflow that monitors global news sources, intelligently selects the most impactful headlines using dual AI models with fallback, and generates high-quality visual representations via Flux1-while maintaining a 10-headline memory buffer to ensure content novelty.
+[![Test](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/test.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/test.yml)
+[![Build and Deploy](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/deploy.yml)
+[![CodeQL](https://github.com/jonorl/agentic-ai-news-to-image/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jonorl/agentic-ai-news-to-image/security/code-scanning)
+[![API status](https://img.shields.io/website?url=https%3A%2F%2Fapi.jonathan-orlowski.dev%2Fhealth&label=api&up_message=healthy&down_message=down)](https://api.jonathan-orlowski.dev/health)
 
-## Project Overview
+An n8n agent that reads the day's news, picks the headline that matters most, and turns it into an image. An LLM chooses one headline from BBC News and Al Jazeera, avoiding anything too close to its last ten picks, and writes a short visual description that Flux.1 Schnell renders. The result is published to a web page and an Android app. Try it at **https://jonathan-orlowski.dev/agentic-ai-news-to-image/**.
 
-This system demonstrates advanced workflow automation and AI orchestration by combining multiple services into a cohesive pipeline that:
-- Fetches real-time news from multiple international sources
-- Uses AI agents to evaluate and select the most impactful headlines
-- Maintains memory to prevent repetitive content
-- Generates artistic visual representations automatically
-- Manages state and stores results in a database
+<p align="center">
+  <a href="https://jonathan-orlowski.dev/agentic-ai-news-to-image/">
+    <img src="frontend/public/workflow.png" alt="The n8n workflow: news and memory are merged, the agent picks a headline with Gemini or Groq, Flux.1 renders it, and the result is uploaded to Cloudinary and saved to Postgres." width="700" />
+  </a>
+</p>
 
-## Mobile App & API Extension (New)
+## Architecture
 
-The system has been expanded with a professional-grade mobile interface and a modern data layer:
+```mermaid
+flowchart LR
+    visitors(["Visitors"])
+    android(["Android app"])
 
-  - New Android app developed using React Native + Expo 54. The apk file can be found under releases.
+    subgraph pages["Cloudflare Pages"]
+        web["Web app<br/>React, Vite"]
+    end
 
-  - GraphQL API: Efficient, type-safe data fetching layer between the database and mobile client.
+    subgraph vps["VPS, Docker Compose"]
+        caddy["Caddy"]
+        api["API<br/>Express, Prisma<br/>REST, GraphQL, /health"]
+        n8n["n8n workflow"]
+    end
 
-  - React Native App: A cross-platform mobile application for real-time news-to-art consumption.
+    neon[("Neon PostgreSQL<br/>stories, 10-headline memory")]
+    news["NewsAPI<br/>BBC, Al Jazeera"]
+    llm["Gemini<br/>Groq Llama 3.3 70B fallback"]
+    img["Flux.1 Schnell on Hugging Face<br/>Leonardo fallback"]
+    cdn["Cloudinary"]
+    gha["GitHub Actions<br/>test, build, deploy, smoke test"]
 
-  - Prisma 7 Integration: Utilizes the latest Prisma features with native PostgreSQL Driver Adapters for high-performance database communication.
+    visitors --> web
+    web -- "stored story (REST)" --> caddy
+    android -- "stored story (GraphQL)" --> caddy
+    web -- "Run Workflow (webhook)" --> caddy
+    caddy --> api
+    caddy --> n8n
+    api --> neon
+    n8n --> news
+    n8n <--> llm
+    n8n --> img
+    n8n --> cdn
+    n8n --> neon
+    web -. "image" .-> cdn
+    gha -- "image via GHCR, SSH" --> vps
+```
 
-## System Architecture
+- **The agent runs on a schedule and on demand.** A scheduled run replaces the story everyone sees. "Run Workflow" on the page runs the same pipeline through a webhook and returns the result to that visitor only.
+- **It doesn't repeat itself.** The last ten headlines it chose are kept in Postgres and sent to the model with the new ones, with instructions to skip anything about the same event, person or topic.
+- **Each model has a fallback.** Groq takes over if Gemini fails, and Leonardo if Flux.1 fails.
+- **A deploy only counts once it's live.** GitHub Actions runs the tests, ships the image, then waits until `/health` reports the new commit and both read APIs return the active story.
 
-### Core Components
+## Pipeline
 
-1. **Data Ingestion**
-   - HTTP Request Tool fetches real-time headlines from BBC News and Al Jazeera via NewsAPI
-   - Parallel execution for optimal performance
+1. **Trigger:** the schedule, or the webhook behind "Run Workflow".
+2. **Collect:** fetch the latest headlines from NewsAPI and the ten-headline memory from Postgres, and format them for the agent.
+3. **Select:** the agent returns one headline and a visual description of at most 20 words, as JSON.
+4. **Remember:** add the headline to the memory and drop anything beyond the last ten.
+5. **Render:** Flux.1 Schnell generates the image through the Hugging Face Inference API.
+6. **Store:** upload the image to Cloudinary, save the story to Postgres and keep the last seven.
+7. **Publish:** a scheduled run marks the new story active; a webhook run returns it as JSON instead.
 
-2. **AI Agent (Dual Model)**
-   - Primary: Google Gemini 2.0 Flash analyzes headlines for impact and uniqueness
-   - Fallback: Groq Llama 3.3 70B ensures uptime and reliability
-   - Outputs selected headline + 20-word visual description
+<details>
+<summary>The agent's prompt</summary>
 
-3. **Memory System**
-   - PostgreSQL-backed 10-headline buffer prevents duplicate selections
-   - Tracks previously selected content to ensure novelty
-   - Automatic cleanup maintains optimal buffer size
-
-4. **Image Pipeline**
-   - Flux1 Schnell via Hugging Face Inference API generates artistic representations
-   - Cloudinary CDN for fast, global image delivery
-   - Automatic upload and URL generation
-
-## Execution Pipeline
-
-1. Trigger → Webhook or scheduled cron job initiates workflow
-
-2. Data Collection → Fetches NewsAPI headlines, merges with 10-headline 
-   memory buffer, and formats for AI agent
-
-3. AI Selection → Gemini evaluates 30 headlines for impact and uniqueness, 
-   outputs headline + 20-word description
-
-4. Memory Update → Adds selected headline to PostgreSQL history
-
-5. Image Generation → Flux1 Schnell creates artistic representation 
-   via Hugging Face Inference API
-
-6. Cloud Upload → Cloudinary stores image and returns CDN URL
-
-7. Database Commit → Saves entry with active status, deactivates old entries, 
-   keeps last 7 for rotation
-
-8. Response → Returns JSON to webhook caller with complete data
-
-## Technology Stack
-
-### Backend & Orchestration
-- **n8n** - Workflow automation and orchestration
-- **PostgreSQL** - Database for memory system and content storage
-- **Docker** - Containerization for deployment
-
-### AI & Machine Learning
-- **Google Gemini 2.0 Flash** - Primary LLM for headline selection
-- **Groq Llama 3.3 70B** - Fallback LLM for reliability
-- **Flux1 Schnell** - Text-to-image generation model
-- **Hugging Face Inference API** - ML model hosting
-
-### Data & Storage
-- **NewsAPI** - News aggregation service
-- **Cloudinary** - Image CDN and storage
-- **BBC News** - Primary news source
-- **Al Jazeera** - Secondary news source
-
-### Frontend
-- **React** - UI framework
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first styling
-- **Node.js** - JavaScript runtime
-
-### Prerequisites
-- Docker and Docker Compose
-- n8n instance (self-hosted or cloud)
-- PostgreSQL database
-- API keys for:
-  - Google Gemini
-  - Groq
-  - Hugging Face
-  - Cloudinary
-
-### AI Agent Prompt
-The system uses a carefully crafted prompt to guide headline selection:
 ```
 #ROLE
 You are an editorial selector for a news-to-art website.
@@ -126,20 +92,91 @@ Return ONLY a valid JSON object:
 }
 ```
 
-## Performance Considerations
+</details>
 
-- **Execution Time**: 30-60 seconds on free-tier services
-- **API Rate Limits**: NewsAPI has daily limits, plan accordingly
-- **Image Generation**: Flux1 Schnell typically takes 10-20 seconds
-- **Database**: PostgreSQL hosted on free Neon db service
+## API
 
-## Acknowledgments and thanks
+Served at `https://api.jonathan-orlowski.dev`.
 
-- n8n community for workflow automation tools
-- Hugging Face for ML infrastructure
-- NewsAPI for news aggregation
-- Black Forest Labs for Flux1 model
+| Endpoint | Used by | Returns |
+| --- | --- | --- |
+| `POST /api/v1/news` | Web app | `{ "getActiveNews": { id, headline, description, image_url } }` |
+| `POST /api/v1/graphql` | Android app | `activeNews { id headline description image_url }` |
+| `GET /health` | Deploy smoke test, status badge | `{ "status", "database", "version" }`, with 503 if Postgres is unreachable |
+
+`version` is the commit the image was built from. The database check is cached for five seconds. The container has no Docker `HEALTHCHECK`, because polling the database would keep the Neon free tier from ever suspending.
+
+## Project structure
+
+```
+├── backend/                # API (Express, Prisma 7 with the pg driver adapter, graphql-http)
+│   ├── src/
+│   │   ├── routes/         # REST, GraphQL and /health
+│   │   ├── middleware/     # CORS
+│   │   └── graphql/        # Schema and resolvers
+│   └── test/               # Jest + supertest, with the database mocked
+├── frontend/               # Web app (React 19, Vite, Tailwind CSS 4)
+│   ├── src/
+│   └── public/
+│       ├── _headers        # Cloudflare Pages security headers (CSP)
+│       └── gtag-init.js    # Google Analytics bootstrap
+├── mobile/                 # Android app (React Native, Expo 54); the APK is under Releases
+├── shared/                 # Types, copy and fetch logic used by both apps
+├── my-workflow.json        # n8n workflow export
+└── Dockerfile              # API image
+```
+
+## Running locally
+
+Requires Node 22.
+
+```bash
+# API: needs AGENTIC_AI_DB_URL in backend/.env
+cd backend
+npm ci
+npx prisma generate
+npm run dev                 # http://localhost:3001
+
+# Web app: reads VITE_BACKEND and VITE_WEBHOOK from .env.development
+cd frontend
+npm ci
+npm run dev
+```
+
+To run the workflow yourself, import `my-workflow.json` into n8n and add credentials for NewsAPI, Gemini, Groq, Hugging Face, Leonardo, Cloudinary and Postgres.
+
+## Testing
+
+Both apps use Jest.
+
+```bash
+cd backend && npm run typecheck && npm test
+cd frontend && npm run typecheck && npm run lint && npm test
+```
+
+- **API:** the REST and GraphQL responses each app depends on, the `/health` statuses and cache, and which origins CORS allows.
+- **Web app:** loading the stored story, running the workflow, and showing an error when the API is down, with `fetch` stubbed.
+
+The `Test` workflow runs both on every push and pull request, and `Build and Deploy` runs it again before shipping.
+
+## Security and maintenance
+
+- **Content Security Policy:** the web app allows scripts only from itself, Google Tag Manager and Cloudflare Web Analytics, images only from Cloudinary, and connections only to the API, the n8n webhook and analytics. Google Analytics is bootstrapped from a file so that no inline script is needed.
+- **CORS:** the API answers browsers only on `jonathan-orlowski.dev` and `agentic-ai-news-to-image.pages.dev`, and returns no stack traces.
+- **Branch protection:** `main` takes changes through pull requests, which need the `backend` and `frontend` checks to pass and no high-severity CodeQL alerts.
+- **CodeQL** scans the TypeScript and the workflows.
+- **Dependabot** opens weekly grouped updates for the API, the web app and the Docker base image, and monthly ones for GitHub Actions. The Expo app gets security updates only, since Expo pins its packages to the SDK.
+
+## Limitations
+
+- A live run takes 30 to 60 seconds on free tiers, mostly image generation.
+- NewsAPI's free plan limits daily requests, so "Run Workflow" may fail once the day's quota is spent.
+- The first request after a quiet spell is slower while Neon wakes up.
+
+## Acknowledgements
+
+n8n for the workflow engine, Black Forest Labs for Flux.1, Hugging Face for hosting it, and NewsAPI for the headlines.
 
 ## Contact
 
-[Jonathan Orlowski](https://jonathan-orlowski.pages.dev/)
+Developed by [Jonathan Orlowski](https://jonathan-orlowski.dev/).

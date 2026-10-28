@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy package files from the backend folder
 COPY backend/package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy all backend code and compile
 COPY backend/ .
@@ -16,11 +16,15 @@ WORKDIR /app
 
 # Only copy the compiled files and production dependencies
 COPY --from=builder /app/package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev
 
-# IMPORTANT: Adjust this path to wherever your compiled files land (usually /dist)
 COPY --from=builder /app/dist ./dist
 
-# Run the compiled JS file
+# The deploy passes the commit being built; /health reports it so the smoke test can tell the new container is live.
+ARG GIT_SHA=dev
+ENV GIT_SHA=$GIT_SHA
+
+# No HEALTHCHECK: /health pings the database, and polling it every 30 seconds would stop the Neon free tier from
+# ever suspending. The deploy's smoke test calls it once instead.
 EXPOSE 3001
 CMD ["node", "dist/app.js"]

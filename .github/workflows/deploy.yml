@@ -9,9 +9,16 @@ on:
       - '.github/workflows/**'
   workflow_dispatch:
 
+# Read-only by default; only build-and-deploy widens it, to push the image to GHCR.
+permissions:
+  contents: read
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   build-and-deploy:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,29 +26,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./ # UPDATE
           push: true
           tags: ghcr.io/jonorl/agentic-ai:latest # UPDATE
+          build-args: GIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1
+        # Pinned to a commit because this third-party action receives the VPS SSH key, and tags can be moved.
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -49,3 +58,34 @@ jobs:
           script: | # UPDATE
             docker compose -f ~/my-VPS/projects/docker-compose.yml pull agentic-ai
             docker compose -f ~/my-VPS/projects/docker-compose.yml up -d agentic-ai
+
+      # A green deploy only means the container was recreated. This waits until /health reports this commit, so the
+      # new container (not the old one) is answering through Caddy and can reach Neon, then checks both read APIs.
+      - name: Smoke test
+        env:
+          BASE: https://api.jonathan-orlowski.dev
+          EXPECTED_VERSION: ${{ github.sha }}
+        run: |
+          # Allows for Neon waking from suspend on the first query.
+          for attempt in $(seq 1 18); do
+            health=$(curl -s --max-time 10 "$BASE/health" || true)
+            if echo "$health" | jq -e --arg v "$EXPECTED_VERSION" '.status == "ok" and .version == $v' > /dev/null 2>&1; then
+              echo "New version healthy after $attempt attempt(s)"
+              break
+            fi
+            if [ "$attempt" -eq 18 ]; then
+              echo "::error::/health did not report status ok for $EXPECTED_VERSION within 90 seconds. Last response: $health"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          curl -fsS --max-time 10 -X POST "$BASE/api/v1/news" | jq -e '.getActiveNews.image_url | type == "string"' > /dev/null \
+            || { echo "::error::POST /api/v1/news did not return the active story, which the web app reads"; exit 1; }
+
+          curl -fsS --max-time 10 -H 'Content-Type: application/json' \
+            -d '{"query":"{ activeNews { id headline description image_url } }"}' "$BASE/api/v1/graphql" \
+            | jq -e '.data.activeNews.headline | type == "string"' > /dev/null \
+            || { echo "::error::GraphQL activeNews did not return the active story, which the mobile app reads"; exit 1; }
+
+          echo "Smoke test passed"

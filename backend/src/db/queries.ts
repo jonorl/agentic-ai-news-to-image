@@ -13,10 +13,13 @@ export const db = {
         is_active: true,
       },
       select: {
+        id: true,
         headline: true,
         description: true,
         image_url: true,
       },
     });
-  }
+  },
+
+  ping: () => prisma.$queryRaw`SELECT 1`,
 };

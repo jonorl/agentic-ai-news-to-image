@@ -1,37 +1,21 @@
 import express, { type Application, type Request, type Response, type NextFunction } from 'express';
-import cors, { type CorsOptions } from 'cors';
 import mainRouter from './routes/mainRouter.js';
-import './db/queries.js';
+import healthRouter from './routes/health.js';
+import { corsMiddleware } from './middleware/cors.js';
 
 const app: Application = express();
-const isDevelopment = process.env.NODE_ENV ? process.env.NODE_ENV === 'development' : false;
+app.disable('x-powered-by');
 
-const allowedOrigins = [
-  'https://agentic-ai-news-to-image.pages.dev',
-  'https://jonathan-orlowski.dev'
-];
-
-const corsOptions: CorsOptions = {
-  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (isDevelopment || !origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-app.use(cors(corsOptions));
+app.use(corsMiddleware());
 app.use(express.json());
 
+app.use('/health', healthRouter);
 app.use("/", mainRouter);
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+// The stack stays in the logs; sending it would show visitors the server's file layout.
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err.stack);
-  res.status(500).json({ error: err.message, stack: err.stack });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT_AGENTIC_AI || 3001;

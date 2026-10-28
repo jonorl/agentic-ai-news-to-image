@@ -1,0 +1,73 @@
+version: 2
+
+# Minor and patch bumps arrive as one PR per app so the weekly run stays reviewable; majors come separately
+# because they are the ones that break things.
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Argentina/Buenos_Aires
+    groups:
+      backend-minor-patch:
+        update-types: [minor, patch]
+      # prisma, @prisma/client, @prisma/config and @prisma/adapter-pg must stay on the same version.
+      prisma:
+        patterns: ["prisma", "@prisma/*"]
+    ignore:
+      # Types should match the Node that runs the code (22 in Docker and CI), not the newest release.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Jest 30's own Babel preset still requires Babel 7.
+      - dependency-name: "@babel/*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Argentina/Buenos_Aires
+    groups:
+      frontend-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Types should match the Node that runs the code (22 in Docker and CI), not the newest release.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Jest 30's own Babel preset still requires Babel 7.
+      - dependency-name: "@babel/*"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint supports TypeScript below 6.1 only; lift this once it supports newer versions.
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
+    open-pull-requests-limit: 5
+
+  # Expo pins its packages to the SDK, so the app moves with `npx expo install --fix`, not package by package.
+  # A limit of 0 turns off version updates here while leaving security updates on.
+  - package-ecosystem: npm
+    directory: /mobile
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Argentina/Buenos_Aires
+    ignore:
+      # Node 22 is what CI tests against; move it by hand.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

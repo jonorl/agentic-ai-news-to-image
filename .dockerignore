@@ -7,6 +7,10 @@ npm-debug.log
 frontend/
 mobile/
 
+# The image only needs the compiled source.
+backend/test/
+backend/src/generated/
+
 # Ignore OS junk
 .DS_Store
 Thumbs.db
