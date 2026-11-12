@@ -36,6 +36,7 @@
     "lightningcss": "1.29.1",
     "@expo/cli": {
       "zod": "^4.6.6"
-    }
+    },
+    "minimatch": "^11.0.8"
   }
 }
